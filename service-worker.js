@@ -1,4 +1,4 @@
-const CACHE_NAME = 'online-system-cache-v1.1.2'; // ອັບເດດເວີຊັ່ນ Cache
+const CACHE_NAME = 'online-system-cache-v1.1.3'; // ອັບເດດເວີຊັ່ນ Cache
 const urlsToCache = [
   './', // ໝາຍເຖິງ root ຂອງ sub-directory
   './index.html',
@@ -61,3 +61,4 @@ self.addEventListener('activate', event => {
     })
   );
 });
+
