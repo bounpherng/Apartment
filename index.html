@@ -265,67 +265,20 @@
     <!-- === NEW FULL EDIT MODAL END === -->
 
     <script>
-        // === START: NEW CODE FOR EXTERNAL HOSTING ===
-        
-        // ໃສ່ URL ຂອງ Web App ທີ່ Deploy ຂອງທ່ານຢູ່ບ່ອນນີ້
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx7FZjVPKf1kT1obQKcjUkMSK0BUtSCkoE-weIIaYqRyNUeY6xZ4se8ZnZflHfANF8C/exec';
-
-        /**
-         * ຟັງຊັນໃໝ່ເພື່ອທົດແທນ google.script.run
-         * @param {string} action - ຊື່ຟັງຊັນທີ່ຈະເອີ້ນໃນ Code.gs
-         * @param {object} payload - ຂໍ້ມູນທີ່ຈະສົ່ງໄປ
-         * @param {string} method - 'GET' ຫຼື 'POST'
-         * @returns {Promise<any>}
-         */
-        function callAppsScript(action, payload = {}, method = 'GET') {
-            let url = new URL(WEB_APP_URL);
-            let options = {
-                method: method,
-                redirect: 'follow', // ຕ້ອງ follow redirects ຂອງ Apps Script
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', // Apps Script ມັກ 'text/plain'
-                },
-            };
-
-            if (method === 'GET') {
-                url.searchParams.append('action', action);
-                for (const key in payload) {
-                    url.searchParams.append(key, payload[key]);
-                }
-            } else { // POST
-                // ສໍາລັບ POST, ຂໍ້ມູນທັງໝົດ (ລວມທັງ action) ຈະຖືກສົ່ງໄປໃນ body
-                const postBody = { ...payload, action };
-                options.body = JSON.stringify(postBody);
-            }
-
-            return new Promise((resolve, reject) => {
-                fetch(url.toString(), options)
-                    .then(response => {
-                        if (!response.ok) {
-                            // ພະຍາຍາມເອົາຂໍ້ມູນເພີ່ມເຕີມຈາກ response
-                            return response.text().then(text => {
-                                throw new Error(`Network response was not ok (status: ${response.status}). Response: ${text}`);
-                            });
-                        }
-                        return response.json(); // Apps Script ຈະຕອບກັບເປັນ JSON
-                    })
-                    .then(data => {
-                        // ກວດສອບວ່າ Apps Script ສົ່ງ error ກັບມາບໍ່
-                        if (data && data.error) {
-                            reject(new Error(data.error));
-                        } else {
-                            resolve(data); // ນີ້ຄື 'res' ທີ່ເຄີຍໄດ້ຈາກ withSuccessHandler
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error calling Apps Script:', error);
-                        reject(error); // ນີ້ຄື 'err' ທີ່ເຄີຍໄດ້ຈາກ withFailureHandler
-                    });
-            });
-        }
-        
-        // === END: NEW CODE FOR EXTERNAL HOSTING ===
-
+        // --- CONFIGURATION ---
+        // 
+        // ==============================================================================
+        //  !!! ສໍາຄັນທີ່ສຸດ !!!
+        //  1. ໃຫ້ເຈົ້າໄປທີ່ Apps Script (ໄຟລ໌ Gs-Apps Script.gs)
+        //  2. ກົດ Deploy > New deployment
+        //  3. ເລືອກ Type ເປັນ "Web app"
+        //  4. ຕັ້ງ "Who has access" ເປັນ "Anyone"
+        //  5. ກົດ Deploy
+        //  6. ກັອບປີ້ "Web app URL" ທີ່ໄດ້ມາໃໝ່
+        //  7. ເອົາມາວາງແທນ URL ໂຕເກົ່າ ຢູ່ແຖວລຸ່ມນີ້
+        // ==============================================================================
+        //
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6kv8zPQpmaGCWk3HhZQy7rK4qOQT3bw74AcUzPy13ETgq3_p0U4vqAl-P2Hxz922-/exec"; // <-- !! ໃສ່ URL ໃໝ່ຂອງເຈົ້າຢູ່ບ່ອນນີ້ !!
 
         // --- STATE AND UTILS ---
         let state = { currentUser: null, monthlyRent: 0, reportDataForExport: null };
@@ -337,6 +290,51 @@
         const formatCurrencyForExport = a => new Intl.NumberFormat('en-US', { useGrouping: false }).format(a);
         const switchView = v => [el('login-view'), el('dashboard-view'), el('public-search-view')].forEach(e => e.id === v ? e.classList.remove('hidden') : e.classList.add('hidden'));
 
+        // --- NEW: SERVER COMMUNICATION HELPER ---
+        /**
+         * ຟັງຊັນໃໝ່ເພື່ອເອີ້ນໃຊ້ Google Apps Script ຜ່ານ fetch
+         * @param {string} functionName - ຊື່ຟັງຊັນໃນ Code.gs ທີ່ຈະເອີ້ນ
+         * @param {Array} parameters - ພາຣາມິເຕີທີ່ຈະສົ່ງໄປ
+         * @returns {Promise<any>} - ຜົນລັບຈາກ server
+         */
+        async function serverFunction(functionName, parameters = []) {
+            const payload = {
+                functionName: functionName,
+                parameters: parameters
+            };
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors', // ສໍາຄັນຫຼາຍ
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    // ຖ້າ server ຕອບສະໜອງ 4xx, 5xx
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.status === 'error') {
+                    // ຖ້າ Apps Script ສົ່ງ error message ທີ່ກຳນົດເອງ
+                    throw new Error(result.message);
+                }
+
+                return result.data; // ສົ່ງຄືນສະເພາະ data
+
+            } catch (error) {
+                // ຖ້າ fetch ລົ້ມເຫຼວ (ເຊັ່ນ: net::ERR_FAILED, CORS)
+                console.error(`Error calling ${functionName}:`, error);
+                throw error; // ສົ່ງ error ຕໍ່
+            }
+        }
+
+
         // --- AUTHENTICATION ---
         function renderAuthSection() {
             const isUser = !!state.currentUser;
@@ -344,57 +342,52 @@
             el('auth-btn').onclick = isUser ? () => { state.currentUser = null; initializeApp(); } : () => { switchView('login-view'); el('public-search-view').classList.add('hidden'); };
         }
 
-        el('login-form').addEventListener('submit', e => {
+        // UPDATED:
+        el('login-form').addEventListener('submit', async (e) => { // <-- ປ່ຽນເປັນ async
             e.preventDefault();
             const loginErrorEl = el('login-error');
             loginErrorEl.classList.add('hidden');
             showLoader('ກຳລັງກວດສອບ...');
 
-            // === UPDATED CALL ===
-            const room = el('room-number').value.trim().toUpperCase();
-            const pass = el('password').value;
-            callAppsScript('login', { roomNumber: room, password: pass }, 'POST')
-                .then(res => {
-                    hideLoader();
-                    if (res.success) { state.currentUser = res.user; initializeApp(); } 
-                    else { 
-                        loginErrorEl.textContent = res.message; 
-                        loginErrorEl.classList.remove('hidden');
-                        showAlert('ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ', res.message, 'error');
-                    }
-                })
-                .catch(err => { 
-                    hideLoader(); 
-                    loginErrorEl.textContent = 'ເກີດຂໍ້ຜິດພາດ: ' + err.message; 
+            try { // <-- ໃຊ້ try...catch
+                const res = await serverFunction('login', [el('room-number').value.trim().toUpperCase(), el('password').value]);
+                
+                // .withSuccessHandler logic (serverFunction ຈະສົ່ງ data ໂດຍກົງ)
+                hideLoader();
+                if (res.success) { 
+                    state.currentUser = res.user; 
+                    initializeApp(); 
+                } 
+                else { 
+                    loginErrorEl.textContent = res.message; 
                     loginErrorEl.classList.remove('hidden');
-                    showAlert('ເກີດຂໍ້ຜິດພາດ', err.message, 'error');
-                });
-            // === END UPDATED CALL ===
+                    showAlert('ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ', res.message, 'error');
+                }
+            } catch (err) { // <-- .withFailureHandler logic (ຈັບ error ຈາກ serverFunction)
+                hideLoader(); 
+                loginErrorEl.textContent = 'ເກີດຂໍ້ຜິດພາດ: ' + err.message; 
+                loginErrorEl.classList.remove('hidden');
+                showAlert('ເກີດຂໍ້ຜິດພາດ', err.message, 'error');
+            }
         });
 
         // --- DASHBOARD RENDERING ---
-        function loadDashboard(roomNumber, isPublic = false) {
+        // UPDATED:
+        async function loadDashboard(roomNumber, isPublic = false) { // <-- ປ່ຽນເປັນ async
             showLoader('ກຳລັງໂຫຼດຂໍ້ມູນ...');
-            
-            // === UPDATED CALL ===
-            callAppsScript('getTenantData', { roomNumber: roomNumber }, 'GET')
-                .then(data => renderDashboard(data, isPublic))
-                .catch(e => { hideLoader(); showAlert('ຜິດພາດ!', e.message, 'error'); });
-            // === END UPDATED CALL ===
+            try { // <-- ໃຊ້ try...catch
+                const data = await serverFunction('getTenantData', [roomNumber]);
+                // .withSuccessHandler logic (data ມາຈາກ serverFunction)
+                renderDashboard(data, isPublic);
+            } catch (e) {
+                // .withFailureHandler logic
+                hideLoader(); 
+                showAlert('ຜິດພາດ!', e.message, 'error'); 
+            }
         }
 
         function renderDashboard(data, isPublic = false) {
-            if (data.error) {
-                hideLoader();
-                if (isPublic) {
-                    el('public-initial-message').classList.add('hidden');
-                    el('public-report-content').innerHTML = `<div class="text-center p-8 bg-white rounded-xl shadow-md text-red-600">${data.error}</div>`;
-                    el('public-report-content').classList.remove('hidden');
-                } else {
-                    showAlert('ຜິດພາດ!', data.error, 'error');
-                }
-                return;
-            }
+            // ໝາຍເຫດ: ຟັງຊັນນີ້ບໍ່ໄດ້ປ່ຽນແປງ ເພາະ serverFunction ໄດ້ສົ່ງ data ໃນຮູບແບບທີ່ຄາດຫວັງໄວ້ແລ້ວ
             
             const { tenantInfo, paymentDetails } = data;
             state.monthlyRent = tenantInfo.monthlyRent;
@@ -624,7 +617,8 @@ ${
             el('receipt-required-star').classList.toggle('hidden', !isTransfer);
         }
 
-        el('payment-form').addEventListener('submit', e => {
+        // UPDATED:
+        el('payment-form').addEventListener('submit', async (e) => { // <-- ປ່ຽນເປັນ async
             e.preventDefault();
             const fileInput = el('payment-receipt');
             const file = fileInput.files[0];
@@ -649,31 +643,42 @@ ${
             if (file) {
                 showLoader('ກຳລັງອັບໂຫຼດໄຟລ໌...');
                 const reader = new FileReader();
-                reader.onload = e => { data.file = { base64: e.target.result.split(',')[1], mimeType: file.type, name: file.name }; submitPayment(data); };
+                reader.onload = e => { 
+                    data.file = { base64: e.target.result.split(',')[1], mimeType: file.type, name: file.name }; 
+                    submitPayment(data); // submitPayment ຕອນນີ້ເປັນ async
+                };
                 reader.readAsDataURL(file);
-            } else { submitPayment(data); }
+            } else { 
+                submitPayment(data); // submitPayment ຕອນນີ້ເປັນ async
+            }
         });
 
-        function submitPayment(data) {
+        // UPDATED:
+        async function submitPayment(data) { // <-- ປ່ຽນເປັນ async
             showLoader('ກຳລັງບັນທຶກ...');
-            
-            // === UPDATED CALL ===
-            callAppsScript('addPaymentRecord', { paymentData: data }, 'POST')
-                .then(res => {
-                    hideLoader();
-                    if(res.success) {
-                        showAlert('ສຳເລັດ!', res.message, 'success');
-                        el('payment-form').reset();
-                        el('file-name-display').textContent = '';
-                        loadDashboard(data.room); 
-                    } else { showAlert('ຜິດພາດ!', res.message, 'error'); }
-                })
-                .catch(err => { hideLoader(); showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error'); });
-            // === END UPDATED CALL ===
+            try { // <-- ໃຊ້ try...catch
+                const res = await serverFunction('addPaymentRecord', [data]);
+
+                // .withSuccessHandler logic (res ມາຈາກ data ໂດຍກົງ)
+                hideLoader();
+                if(res.success) {
+                    showAlert('ສຳເລັດ!', res.message, 'success');
+                    el('payment-form').reset();
+                    el('file-name-display').textContent = '';
+                    loadDashboard(data.room); 
+                } else { 
+                    showAlert('ຜິດພາດ!', res.message, 'error'); 
+                }
+            } catch (err) {
+                // .withFailureHandler logic
+                hideLoader(); 
+                showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error');
+            }
         }
         
         // --- ADMIN & PUBLIC FUNCTIONS ---
-        function initializeAdminDashboard() {
+        // UPDATED:
+        async function initializeAdminDashboard() { // <-- ປ່ຽນເປັນ async
             el('admin-controls').classList.remove('hidden');
             el('admin-actions-container').innerHTML = `
                 <div class="bg-white p-4 rounded-2xl shadow-xl border border-slate-200">
@@ -688,24 +693,26 @@ ${
                 </div>`;
             
             showLoader('ກຳລັງໂຫຼດລາຍຊື່...');
-            
-            // === UPDATED CALL ===
-            callAppsScript('getAllTenants', {}, 'GET')
-                .then(tenants => {
-                    const select = el('tenant-select');
-                    select.innerHTML = '<option value="">-- ເລືອກຜູ້ເຊົ່າ --</option>';
-                    tenants.forEach(t => select.innerHTML += `<option value="${t.room}">[${t.room}] - ${t.name}</option>`);
-                    if (tenants.some(t => t.room === state.currentUser.room)) { 
-                        select.value = state.currentUser.room; 
-                        loadDashboard(state.currentUser.room); 
-                    } else { 
-                        hideLoader();
-                        el('user-info-card').innerHTML = '<div class="text-center p-4">ກະລຸນາເລືອກຜູ້ເຊົ່າຈາກລາຍການ</div>';
-                        el('payment-details-content').innerHTML = '';
-                    }
-                })
-                .catch(err => { hideLoader(); showAlert('ຜິດພາດ!', err.message, 'error'); });
-            // === END UPDATED CALL ===
+            try { // <-- ໃຊ້ try...catch
+                const tenants = await serverFunction('getAllTenants');
+
+                // .withSuccessHandler logic
+                const select = el('tenant-select');
+                select.innerHTML = '<option value="">-- ເລືອກຜູ້ເຊົ່າ --</option>';
+                tenants.forEach(t => select.innerHTML += `<option value="${t.room}">[${t.room}] - ${t.name}</option>`);
+                if (tenants.some(t => t.room === state.currentUser.room)) { 
+                    select.value = state.currentUser.room; 
+                    loadDashboard(state.currentUser.room); 
+                } else { 
+                    hideLoader();
+                    el('user-info-card').innerHTML = '<div class="text-center p-4">ກະລຸນາເລືອກຜູ້ເຊົ່າຈາກລາຍການ</div>';
+                    el('payment-details-content').innerHTML = '';
+                }
+            } catch (err) {
+                // .withFailureHandler logic
+                hideLoader(); 
+                showAlert('ຜິດພາດ!', err.message, 'error'); 
+            }
             
             el('tenant-select').onchange = () => {
                 const selectedRoom = el('tenant-select').value;
@@ -723,24 +730,19 @@ ${
                 }
             };
             
-            el('print-summary-report-btn').onclick = () => {
+            // UPDATED:
+            el('print-summary-report-btn').onclick = async () => { // <-- ປ່ຽນເປັນ async
                 showLoader('ກຳລັງສ້າງລາຍງານລວມ...');
-                
-                // === UPDATED CALL ===
-                callAppsScript('getAllTenantsReportData', {}, 'GET')
-                    .then(data => {
-                        hideLoader();
-                        if (data.error) {
-                            showAlert('ຜິດພາດ!', data.error, 'error');
-                        } else {
-                            printSummaryReport(data);
-                        }
-                    })
-                    .catch(err => {
-                        hideLoader();
-                        showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error');
-                    });
-                // === END UPDATED CALL ===
+                try { // <-- ໃຊ້ try...catch
+                    const data = await serverFunction('getAllTenantsReportData');
+                    // .withSuccessHandler logic
+                    hideLoader();
+                    printSummaryReport(data);
+                } catch (err) {
+                    // .withFailureHandler logic
+                    hideLoader();
+                    showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error');
+                }
             };
         }
 
@@ -811,26 +813,20 @@ ${
             editPaymentModal.classList.remove('flex');
         }
 
+        // UPDATED:
         // 1. Called when Admin clicks "Edit"
-        function showEditForm(paymentId) {
+        async function showEditForm(paymentId) { // <-- ປ່ຽນເປັນ async
             closeAdminPaymentModal();
             showLoader('ກຳລັງໂຫຼດຂໍ້ມູນແກ້ໄຂ...');
-            
-            // === UPDATED CALL ===
-            callAppsScript('getPaymentRecordById', { paymentId: paymentId }, 'GET')
-                .then(record => {
-                    if (record.error) {
-                        hideLoader();
-                        showAlert('ຜິດພາດ!', record.error, 'error');
-                    } else {
-                        populateEditForm(record);
-                    }
-                })
-                .catch(err => {
-                    hideLoader();
-                    showAlert('ຜິດພາດ!', err.message, 'error');
-                });
-            // === END UPDATED CALL ===
+            try { // <-- ໃຊ້ try...catch
+                const record = await serverFunction('getPaymentRecordById', [paymentId]);
+                // .withSuccessHandler logic
+                populateEditForm(record);
+            } catch (err) {
+                // .withFailureHandler logic
+                hideLoader();
+                showAlert('ຜິດພາດ!', err.message, 'error');
+            }
         }
 
         // 2. Fills the new modal with data from backend
@@ -849,8 +845,9 @@ ${
             editPaymentModal.classList.add('flex');
         }
 
+        // UPDATED:
         // 3. Handles submission of the new edit form (IMPROVED VALIDATION)
-        function handleEditSubmit(e) {
+        async function handleEditSubmit(e) { // <-- ປ່ຽນເປັນ async
             e.preventDefault();
             const errorEl = el('edit-payment-error');
             errorEl.classList.add('hidden'); // Hide previous errors
@@ -880,33 +877,36 @@ ${
             }
             // === End client-side checks ===
 
+
             showLoader('ກຳລັງກວດສອບ ແລະ ບັນທຶກ...');
 
-            // === UPDATED CALL ===
-            callAppsScript('updatePaymentRecord', { record: updatedRecord }, 'POST')
-                .then(res => {
-                    hideLoader();
-                    if (res.success) {
-                        showAlert('ສຳເລັດ!', res.message, 'success');
-                        closeEditPaymentModal();
-                        // Refresh dashboard
-                        const selectedRoom = el('tenant-select').value;
-                        if (selectedRoom) loadDashboard(selectedRoom);
-                    } else {
-                        // === NEW: Show validation error in modal ===
-                        errorEl.textContent = res.message; // Show server error
-                        errorEl.classList.remove('hidden');
-                    }
-                })
-                .catch(err => {
-                    hideLoader();
-                    // Show general errors in an alert
+            try { // <-- ໃຊ້ try...catch
+                const res = await serverFunction('updatePaymentRecord', [updatedRecord]);
+
+                // .withSuccessHandler logic
+                hideLoader();
+                // res ຈະມີ { success: true, message: ... }
+                showAlert('ສຳເລັດ!', res.message, 'success');
+                closeEditPaymentModal();
+                // Refresh dashboard
+                const selectedRoom = el('tenant-select').value;
+                if (selectedRoom) loadDashboard(selectedRoom);
+            } catch (err) {
+                // .withFailureHandler logic
+                hideLoader();
+                // ຖ້າເປັນ error ຈາກ validation (ເຊັ່ນ: ເດືອນຊ້ຳ)
+                if (err.message.includes('ຂໍ້ມູນຊ້ຳ') || err.message.includes('ຂໍ້ມູນບໍ່ຕໍ່ເນື່ອງ') || err.message.includes('ຮູບແບບ')) {
+                    errorEl.textContent = err.message; // Show server error
+                    errorEl.classList.remove('hidden');
+                } else {
+                    // ຖ້າເປັນ error ທົ່ວໄປ
                     showAlert('ຜິດພາດ!', err.message, 'error');
-                });
-            // === END UPDATED CALL ===
+                }
+            }
         }
 
-        function handleDeletePayment(paymentId, fileId) {
+        // UPDATED:
+        function handleDeletePayment(paymentId, fileId) { // ບໍ່ຈຳເປັນຕ້ອງ async ຢູ່ບ່ອນນີ້
             Swal.fire({
                 title: 'ຢືນຢັນການລົບ',
                 text: `ທ່ານຕ້ອງການລົບລາຍການຈ່າຍເງິນນີ້ແທ້ບໍ່? ຂໍ້ມູນ ແລະ ໄຟລ໌ທີ່ຕິດຄັດ (ຖ້າມີ) ຈະຖືກລົບຖາວອນ!`,
@@ -919,29 +919,30 @@ ${
                 customClass: { popup: 'swal2-popup' } // Keep Lao font
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showLoader('ກຳລັງລົບ...');
-                    
-                    // === UPDATED CALL ===
-                    callAppsScript('deletePaymentRecord', { paymentId: paymentId, fileId: fileId }, 'POST')
-                        .then(res => {
-                            hideLoader();
-                            if (res.success) {
-                                showAlert('ສຳເລັດ!', res.message, 'success');
-                                closeAdminPaymentModal();
-                                // Refresh dashboard
-                                const selectedRoom = el('tenant-select').value;
-                                if (selectedRoom) loadDashboard(selectedRoom);
-                            } else {
-                                showAlert('ຜິດພາດ!', res.message, 'error');
-                            }
-                        })
-                        .catch(err => {
-                            hideLoader();
-                            showAlert('ຜິດພາດ!', err.message, 'error');
-                        });
-                    // === END UPDATED CALL ===
+                    // ຕອນນີ້ເຮົາເອີ້ນ async function ຢູ່ດ້ານໃນ
+                    executeDeletion(paymentId, fileId);
                 }
             });
+        }
+
+        // UPDATED: ຟັງຊັນຊ່ວຍໃໝ່
+        async function executeDeletion(paymentId, fileId) { // <-- ປ່ຽນເປັນ async
+             showLoader('ກຳລັງລົບ...');
+            try { // <-- ໃຊ້ try...catch
+                const res = await serverFunction('deletePaymentRecord', [paymentId, fileId]);
+                
+                // .withSuccessHandler logic
+                hideLoader();
+                showAlert('ສຳເລັດ!', res.message, 'success');
+                closeAdminPaymentModal();
+                // Refresh dashboard
+                const selectedRoom = el('tenant-select').value;
+                if (selectedRoom) loadDashboard(selectedRoom);
+            } catch (err) {
+                // .withFailureHandler logic
+                hideLoader();
+                showAlert('ຜິດພາດ!', err.message, 'error');
+            }
         }
         // === UPDATED ADMIN MODAL FUNCTIONS END ===
 
@@ -1226,7 +1227,7 @@ ${
             let paymentCounter = 1;
             const sortedYears = Object.keys(paymentDetails.paidByYear).sort((a, b) => a - b);
             sortedYears.forEach(year => {
-                const monthsInYear = paidByYear[year].map(m => m.month).sort((a,b) => parseInt(a) - parseInt(b));
+                const monthsInYear = paymentDetails.paidByYear[year].map(m => m.month).sort((a,b) => parseInt(a) - parseInt(b));
                 const amountInYear = monthsInYear.length * tenantInfo.monthlyRent;
                 csvRows.push([
                     paymentCounter++,
@@ -1256,7 +1257,7 @@ ${
             const { tenants, grandTotals } = state.reportDataForExport;
             
             let csvRows = [];
-            const today = new Date().toLocaleDateString('lo-LA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const today = new Date().toLocaleDateString('lo-LA', { day: '2.digit', month: '2.digit', year: 'numeric' });
             
             // --- Header ---
             csvRows.push(['ໃບລາຍງານສະຫຼຸບລວມ']);
@@ -1304,10 +1305,10 @@ ${
             if (state.currentUser) {
                 switchView('dashboard-view');
                 if (state.currentUser.role === 'Admin') {
-                    initializeAdminDashboard();
+                    initializeAdminDashboard(); // This is already async
                 } else {
                     el('admin-controls').classList.add('hidden');
-                    loadDashboard(state.currentUser.room);
+                    loadDashboard(state.currentUser.room); // This is already async
                 }
             } else {
                 switchView('public-search-view');
@@ -1315,7 +1316,6 @@ ${
                 el('public-initial-message').classList.remove('hidden'); // Show the welcome message
                 el('admin-controls').classList.add('hidden');
                 el('admin-actions-container').innerHTML = '';
-                //loadDashboard('07', true); // Load room 07 by default for public view //ຕັງຄ່າໄຫ້ໂຫລດລະຫັດ07ທຸກເທືອທີ່ເປີດລະບົບ//
             }
         }
 
@@ -1346,6 +1346,6 @@ ${
                 handleMonthInput(el('edit-payment-months'), el('edit-payment-amount'), el('edit-payment-error'));
             });
         });
-  
+    </script>
 </body>
 </html>
