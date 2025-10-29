@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ຕິດຕາມການຊຳລະເງີນຄ່າຫໍພັກ</title>
+
+  <!-- ✅ ເພີ່ມສ່ວນນີ້ -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+</head>
+<body>
+  <iframe src="https://script.google.com/macros/s/AKfycbx7FZjVPKf1kT1obQKcjUkMSK0BUtSCkoE-weIIaYqRyNUeY6xZ4se8ZnZflHfANF8C/exec"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
+  </iframe>
+
+  <!-- ✅ ເພີ່ມສ່ວນນີ້ກ່ອນປິດ body -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registered: ', registration);
+          })
+          .catch(error => {
+            console.log('Service Worker registration failed: ', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
