@@ -1,34 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="lo">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ຕິດຕາມການຊຳລະເງີນຄ່າຫໍພັກ</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My PWA Apps Script</title>
 
-  <!-- ✅ ເພີ່ມສ່ວນນີ້ -->
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icon-192.png" />
+  <!-- manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- icons -->
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+
+  <!-- theme color -->
+  <meta name="theme-color" content="#2196f3">
+
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #2196f3;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+    }
+    iframe {
+      border: none;
+      width: 100%;
+      flex: 1;
+    }
+  </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycbx7FZjVPKf1kT1obQKcjUkMSK0BUtSCkoE-weIIaYqRyNUeY6xZ4se8ZnZflHfANF8C/exec"
-          width="100%"
-          height="100%"
-          frameborder="0"
-          style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
-  </iframe>
+  <header>ແອັບ Google Apps Script ຂອງຂ້ອຍ</header>
+  <iframe src="https://script.google.com/macros/s/AKfycbx7FZjVPKf1kT1obQKcjUkMSK0BUtSCkoE-weIIaYqRyNUeY6xZ4se8ZnZflHfANF8C/exec" allowfullscreen></iframe>
 
-  <!-- ✅ ເພີ່ມສ່ວນນີ້ກ່ອນປິດ body -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(registration => {
-            console.log('Service Worker registered: ', registration);
-          })
-          .catch(error => {
-            console.log('Service Worker registration failed: ', error);
-          });
-      });
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => console.log('✅ Service Worker registered:', reg))
+        .catch(err => console.error('❌ Service Worker error:', err));
     }
   </script>
 </body>
