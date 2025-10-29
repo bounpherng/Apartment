@@ -1,1351 +1,153 @@
 <!DOCTYPE html>
 <html lang="lo">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ຕິດຕາມການຊຳລະເງີນຄ່າຫໍພັກ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Import Fonts: Noto Sans Lao for mobile and Phetsarath OT for desktop -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700&family=Phetsarath+OT:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        /* Default font for mobile devices */
-        body { 
-            font-family: 'Noto Sans Lao', sans-serif; 
-            background-color: #f8fafc; /* Changed to a lighter slate color */
-        }
-        /* Phetsarath OT font for desktop devices */
-        @media (min-width: 768px) {
-            body {
-                font-family: 'Phetsarath OT', sans-serif;
-            }
-        }
-        /* Custom font for SweetAlert2 */
-        .swal2-popup {
-            font-family: 'Phetsarath OT', 'Noto Sans Lao', sans-serif !important;
-        }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #16a34a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; transform: scale(0.95); }
-        .modal.flex { opacity: 1; }
-        .modal.flex .modal-content { transform: scale(1); }
-        .form-input { @apply w-full border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
-        .accordion-content.open { max-height: 500px; } /* Adjust max-height as needed */
-        .rotate-180 { transform: rotate(180deg); }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ລະບົບຕິດຕາມການຊຳລະເງີນຫໍພັກ</title>
+  <meta name="description" content="ຕິດຕາມການຊຳລະເງີນຫໍພັກ ງ່າຍ ໄວ ແລະປອດໄພ">
+  
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+  
+  <meta name="theme-color" content="#2e9a57">
+  <style>
+    :root {
+      --green: #2e9a57;
+      --green-dark: #1f6c3b;
+      --green-light: #e8f7ee;
+      --text-dark: #133a23;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Lao', sans-serif; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background: linear-gradient(180deg, var(--green-light), #fff);
+      color: var(--text-dark);
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      max-width: 380px;
+      width: 90%;
+      animation: fadeIn 1s ease;
+    }
+    .logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 22px;
+      color: var(--green);
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+    p {
+      font-size: 14px;
+      color: #3f614a;
+      margin-bottom: 24px;
+    }
+    button {
+      appearance: none;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      width: 100%;
+      transition: 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: white;
+      margin-bottom: 10px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-install {
+      background: transparent;
+      color: var(--green-dark);
+      border: 2px solid var(--green);
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #2f5f3f;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-<body class="antialiased text-slate-800">
-
-    <div id="app" class="container mx-auto p-4 max-w-7xl">
-        <header class="flex flex-col sm:flex-row items-center justify-between mb-6 bg-white p-4 rounded-xl shadow-md">
-            <div class="flex items-center space-x-4">
-                <img src="https://i.ibb.co/F4VGPVB1/image.png" alt="Logo" class="h-14 w-14 object-contain">
-                <div>
-                    <h1 class="text-xl md:text-xl font-bold text-slate-800">ຕິດຕາມການຊຳລະເງີນ:</h1>
-                    <p class="text-sm text-slate-500">ຄ່າພັກເຊົາຫໍພັກພະແນກແຜນການ</p>
-                </div>
-            </div>
-            <div id="auth-section" class="mt-4 sm:mt-0"></div>
-        </header>
-        
-        <main>
-            <!-- Login View -->
-            <div id="login-view" class="hidden">
-                 <div class="max-w-md mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-xl mt-10 border border-slate-200">
-                    <div class="text-center mb-8">
-                        <img src="https://i.ibb.co/F4VGPVB1/image.png" alt="Logo" class="w-20 h-20 mx-auto mb-4">
-                        <h2 class="text-2xl font-bold text-slate-800">ເຂົ້າສູ່ລະບົບ</h2>
-                        <p class="text-slate-500">ກະລຸນາປ້ອນເບີຫ້ອງ ແລະ ລະຫັດຜ່ານ</p>
-                    </div>
-                    <form id="login-form" class="space-y-6">
-                        <div>
-                            <label for="room-number" class="block mb-2 text-sm font-medium text-slate-700">ເບີຫ້ອງ</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-door-closed"></i></span>
-                                <input type="text" id="room-number" placeholder="ຕົວຢ່າງ: 07" class="form-input py-3 pl-12 text-base" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="password" class="block mb-2 text-sm font-medium text-slate-700">ລະຫັດຜ່ານ</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" id="password" placeholder="••••••••" class="form-input py-3 pl-12 text-base" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full px-4 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                            <i class="fa-solid fa-right-to-bracket mr-2"></i>ເຂົ້າສູ່ລະບົບ
-                        </button>
-                    </form>
-                    <div id="login-error" class="hidden mt-4 text-center text-red-600 font-medium"></div>
-                </div>
-            </div>
-
-            <!-- Dashboard View -->
-            <div id="dashboard-view" class="hidden">
-                 <div id="admin-controls" class="hidden mb-6 bg-white p-4 rounded-xl shadow-md">
-                    <div class="flex flex-col sm:flex-row gap-4 items-end">
-                        <div class="flex-grow w-full">
-                            <label for="tenant-select" class="block font-medium text-slate-700 mb-2">ເລືອກຜູ້ເຊົ່າເພື່ອຈັດການ:</label>
-                            <select id="tenant-select" class="form-input p-2.5"></select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-2 space-y-6">
-                        <div id="user-info-card" class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200"></div>
-                        <div id="admin-actions-container"></div> <!-- Container for Admin buttons like Print -->
-                        <div id="add-payment-card" class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
-                             <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center"><i class="fa-solid fa-cash-register mr-3 text-green-600"></i>ບັນທຶກການຈ່າຍເງິນ</h3>
-                            <form id="payment-form" class="space-y-4">
-                                <input type="hidden" id="payment-name"><input type="hidden" id="payment-room">
-                                <div>
-                                    <label for="payment-months" class="block text-sm font-medium text-slate-700">
-                                        <span id="payment-month-hint" class="text-slate-500 font-normal">(ຮູບແບບ: 7,8/2025)</span>
-                                    </label>
-                                    <input type="text" id="payment-months" class="form-input mt-1 p-2" placeholder="ປ້ອນເດືອນ ແລະ ປີ" required>
-                                    <p id="payment-months-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                                </div>
-                                <div>
-                                    <label for="payment-amount" class="block text-sm font-medium">ຈຳນວນເງິນ (ກີບ)</label>
-                                    <input type="text" id="payment-amount" class="form-input mt-1 p-2 bg-slate-100 text-right font-bold text-lg" readonly placeholder="0">
-                                </div>
-                                <div>
-                                    <label for="payment-method" class="block text-sm font-medium">ວິທີຈ່າຍ</label>
-                                    <select id="payment-method" class="form-input mt-1 p-2"></select>
-                                </div>
-                                <div>
-                                    <label for="payment-receipt" class="block text-sm font-medium">ເອກະສານ (ໃບບິນ) <span id="receipt-required-star" class="text-red-500 hidden">*</span></label>
-                                    <input type="file" id="payment-receipt" class="w-full mt-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
-                                    <p id="file-name-display" class="text-xs text-slate-500 mt-1 truncate"></p>
-                                    <p class="text-xs text-slate-500 mt-1">ຂະໜາດສູງສຸດ 5MB. ຮອງຮັບຮູບພາບ, PDF, Word, Excel.</p>
-                                </div>
-                                <button type="submit" id="submit-payment-btn" class="w-full py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 shadow-lg transition-all duration-300 transform hover:scale-105">
-                                    <i class="fas fa-save mr-2"></i>ບັນທຶກ
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="payment-details-content" class="lg:col-span-3 space-y-6"></div>
-                </div>
-            </div>
-            
-            <!-- Public Search View - REDESIGNED -->
-            <div id="public-search-view">
-                 <div class="max-w-3xl mx-auto">
-                    <!-- Redesigned Search Bar -->
-                    <div class="relative w-full mb-8">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-5 text-slate-400">
-                            <i class="fas fa-search text-xl"></i>
-                        </span>
-                        <input type="text" id="public-room-input" placeholder="ປ້ອນເບີຫ້ອງເພື່ອຄົ້ນຫາ (ຕົວຢ່າງ: 07)" class="w-full pl-14 pr-32 py-4 border-2 border-transparent rounded-xl focus:outline-none focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-shadow shadow-lg text-lg">
-                        <button id="public-search-btn" class="absolute inset-y-0 right-0 px-6 m-1.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-4 focus:ring-green-300 transform hover:scale-105">
-                            ຄົ້ນຫາ
-                        </button>
-                    </div>
-
-                    <!-- Redesigned Initial Message -->
-                    <div id="public-initial-message" class="text-center py-16 sm:py-20 px-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-xl border border-slate-200 transition-all duration-500 hover:shadow-2xl">
-                        <div class="inline-block p-6 bg-green-100 rounded-full mb-6 shadow-inner">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                            </svg>
-                        </div>
-                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-4">ຍິນດີຕ້ອນຮັບທຸກທ່ານ</h2>
-                        <p class="text-base sm:text-lg text-slate-600 max-w-xl mx-auto">
-                           ເຂົ້າສູ່ລະບົບສືບຄົ້ນ ແລະ ກວດສອບການຊຳລະເງິນຄ່າຫໍພັກ
-                        </p>
-                    </div>
-
-                    <div id="public-report-content" class="hidden"></div>
-                 </div>
-            </div>
-        </main>
-
-        <footer class="text-center mt-10 p-4 text-xs text-slate-500 bg-white rounded-xl shadow-md">
-            <p class="font-bold">ແຈ້ງເຕືອນ:</p>
-            <p>ການຈ່າຍເງີນຫໍພັກນີ້, ເປັນການຕິດຕາມໃນເບື້ອງຕົ້ນພຽງເທົ່ານັ້ນ.</p>
-            <p>ຖ້າຂໍ້ມູນການຊຳລະເງີນບໍ່ຖືກຕ້ອງຄົບຖ້ວນ, ກະລຸນາຕິດຕໍ່ຜູ້ຮັບຜິດຊອບໂດຍກົງ: <span class="font-semibold">020 XXXXXXXX</span></p>
-        </footer>
+<body>
+  <div class="card">
+    <div class="logo">
+      <img src="https://i.ibb.co/k6SJLcCQ/icon-512.png" alt="icon-512">
     </div>
-
-    <!-- Modals and Loaders -->
-    <div id="loader-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center"><div class="bg-white p-8 rounded-xl shadow-lg flex flex-col items-center"><div class="loader"></div><p id="loader-text" class="mt-4 text-slate-600">ກຳລັງໂຫຼດ...</p></div></div>
-    <div id="receipt-viewer-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4 modal"><div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm text-center modal-content"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">ຫຼັກຖານການຈ່າຍເງິນ</h3><button onclick="closeReceiptModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button></div><i class="fa-solid fa-file-invoice-dollar text-7xl text-green-500 mb-6"></i><a id="modal-receipt-link" href="#" target="_blank" class="block w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"><i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>ເປີດເບິ່ງເອກະສານ</a><button onclick="closeReceiptModal()" class="mt-4 w-full text-slate-600 bg-slate-100 py-2 rounded-lg hover:bg-slate-200">ປິດ</button></div></div>
-    <div id="cash-notice-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4 modal"><div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm text-center modal-content"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">ແຈ້ງເຕືອນ</h3><button onclick="closeCashModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button></div><i class="fa-solid fa-money-bill-wave text-7xl text-green-500 mb-6"></i><h4 id="cash-modal-month" class="text-xl font-bold mb-2"></h4><p class="text-slate-600 mb-6">ລາຍການນີ້ຈ່າຍດ້ວຍເງິນສົດ,<br>ບໍ່ມີເອກະສານອ້າງອີງໃນລະບົບ.</p><button onclick="closeCashModal()" class="mt-4 w-full text-slate-600 bg-slate-100 py-2 rounded-lg hover:bg-slate-200">ປິດ</button></div></div>
-    
-    <!-- === ADMIN ACTION MODAL (View/Delete) === -->
-    <div id="admin-payment-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4 modal">
-        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">ຈັດການລາຍການ: <span id="admin-modal-month"></span></h3>
-                <button onclick="closeAdminPaymentModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-            </div>
-            <div class="space-y-3">
-                <a id="admin-modal-view-link" href="#" target="_blank" class="flex items-center w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                    <i class="fa-solid fa-eye w-6 text-center mr-3"></i> ເບິ່ງເອກະສານ
-                </a>
-                <!-- This button now opens the NEW edit modal -->
-                <button id="admin-modal-edit-btn" class="flex items-center w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                    <i class="fa-solid fa-pen-to-square w-6 text-center mr-3"></i> ແກ້ໄຂຂໍ້ມູນ
-                </button>
-                <button id="admin-modal-delete-btn" class="flex items-center w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors">
-                    <i class="fa-solid fa-trash w-6 text-center mr-3"></i> ລົບຂໍ້ມູນ
-                </button>
-                <hr class="my-2">
-                <button onclick="closeAdminPaymentModal()" class="w-full text-slate-600 bg-slate-100 py-2 rounded-lg hover:bg-slate-200">ປິດ</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- === NEW FULL EDIT MODAL START (IMPROVED) === -->
-    <div id="edit-payment-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4 modal">
-        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg modal-content">
-            <div class="flex justify-between items-center mb-6 border-b pb-3">
-                <h3 class="text-xl font-bold">ແກ້ໄຂລາຍການຈ່າຍເງິນ</h3>
-                <button onclick="closeEditPaymentModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-            </div>
-            <form id="edit-payment-form" class="space-y-4">
-                <input type="hidden" id="edit-payment-id">
-                
-                <div>
-                    <label for="edit-payment-date" class="block text-sm font-semibold text-slate-700">ວັນທີບັນທຶກ</label>
-                    <input type="date" id="edit-payment-date" class="form-input mt-1 p-2">
-                </div>
-                
-                <div>
-                    <label for="edit-payment-name" class="block text-sm font-semibold text-slate-700">ຊື່ຜູ້ຈ່າຍ (ອ່ານຢ່າງດຽວ)</label>
-                    <input type="text" id="edit-payment-name" class="form-input mt-1 p-2 bg-slate-100" readonly>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="edit-payment-months" class="block text-sm font-semibold text-slate-700">ເດືອນ/ປີ (ຮູບແບບ: 7,8/2025)</label>
-                        <input type="text" id="edit-payment-months" class="form-input mt-1 p-2" placeholder="ຕົວຢ່າງ: 7,8/2025">
-                        <!-- === NEW: Error message element === -->
-                        <p id="edit-payment-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                    </div>
-                    <div>
-                        <label for="edit-payment-amount" class="block text-sm font-semibold text-slate-700">ຈຳນວນເງິນ</label>
-                        <input type="number" id="edit-payment-amount" class="form-input mt-1 p-2" placeholder="ປ້ອນຈຳນວນເງິນ">
-                    </div>
-                </div>
-                
-                <div>
-                    <label for="edit-payment-method" class="block text-sm font-semibold text-slate-700">ວິທີຈ່າຍ</label>
-                    <select id="edit-payment-method" class="form-input mt-1 p-2">
-                        <option value="ເງິນໂອນ">ເງິນໂອນ</option>
-                        <option value="ເງິນສົດ">ເງິນສົດ</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="edit-payment-link" class="block text-sm font-semibold text-slate-700">ລິ້ງໃບບິນ (Google Drive)</label>
-                    <input type="text" id="edit-payment-link" class="form-input mt-1 p-2" placeholder="ໃສ່ # ຫຼື ວ່າງໄວ້ ຖ້າເປັນເງິນສົດ">
-                    <p class="text-xs text-slate-500 mt-1">ຖ້າເລືອກ "ເງິນສົດ", ລະບົບຈະໃສ່ # ໃຫ້ອັດຕະໂນມັດ.</p>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-4 border-t mt-6">
-                     <button type="button" onclick="closeEditPaymentModal()" class="px-6 py-2 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 transition">
-                        ຍົກເລີກ
-                    </button>
-                    <button type="submit" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition">
-                        <i class="fas fa-save mr-2"></i>ບັນທຶກການແກ້ໄຂ
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- === NEW FULL EDIT MODAL END === -->
-
-    <script>
-        // --- CONFIGURATION ---
-        // 
-        // ==============================================================================
-        //  !!! ສໍາຄັນທີ່ສຸດ !!!
-        //  1. ໃຫ້ເຈົ້າໄປທີ່ Apps Script (ໄຟລ໌ Gs-Apps Script.gs)
-        //  2. ກົດ Deploy > New deployment
-        //  3. ເລືອກ Type ເປັນ "Web app"
-        //  4. ຕັ້ງ "Who has access" ເປັນ "Anyone"
-        //  5. ກົດ Deploy
-        //  6. ກັອບປີ້ "Web app URL" ທີ່ໄດ້ມາໃໝ່
-        //  7. ເອົາມາວາງແທນ URL ໂຕເກົ່າ ຢູ່ແຖວລຸ່ມນີ້
-        // ==============================================================================
-        //
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6kv8zPQpmaGCWk3HhZQy7rK4qOQT3bw74AcUzPy13ETgq3_p0U4vqAl-P2Hxz922-/exec"; // <-- !! ໃສ່ URL ໃໝ່ຂອງເຈົ້າຢູ່ບ່ອນນີ້ !!
-
-        // --- STATE AND UTILS ---
-        let state = { currentUser: null, monthlyRent: 0, reportDataForExport: null };
-        const el = id => document.getElementById(id);
-        const showLoader = t => { el('loader-text').textContent = t || 'ກຳລັງໂຫຼດ...'; el('loader-modal').classList.add('flex'); el('loader-modal').classList.remove('hidden'); };
-        const hideLoader = () => { el('loader-modal').classList.add('hidden'); el('loader-modal').classList.remove('flex'); };
-        const showAlert = (title, text, icon) => { Swal.fire({ title: title, text: text, icon: icon, confirmButtonText: 'ຕົກລົງ', customClass: { popup: 'swal2-popup' } }); };
-        const formatCurrency = a => new Intl.NumberFormat('lo-LA').format(a) + ' ກີບ';
-        const formatCurrencyForExport = a => new Intl.NumberFormat('en-US', { useGrouping: false }).format(a);
-        const switchView = v => [el('login-view'), el('dashboard-view'), el('public-search-view')].forEach(e => e.id === v ? e.classList.remove('hidden') : e.classList.add('hidden'));
-
-        // --- NEW: SERVER COMMUNICATION HELPER ---
-        /**
-         * ຟັງຊັນໃໝ່ເພື່ອເອີ້ນໃຊ້ Google Apps Script ຜ່ານ fetch
-         * @param {string} functionName - ຊື່ຟັງຊັນໃນ Code.gs ທີ່ຈະເອີ້ນ
-         * @param {Array} parameters - ພາຣາມິເຕີທີ່ຈະສົ່ງໄປ
-         * @returns {Promise<any>} - ຜົນລັບຈາກ server
-         */
-        async function serverFunction(functionName, parameters = []) {
-            const payload = {
-                functionName: functionName,
-                parameters: parameters
-            };
-
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors', // ສໍາຄັນຫຼາຍ
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    // ຖ້າ server ຕອບສະໜອງ 4xx, 5xx
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                }
-
-                const result = await response.json();
-
-                if (result.status === 'error') {
-                    // ຖ້າ Apps Script ສົ່ງ error message ທີ່ກຳນົດເອງ
-                    throw new Error(result.message);
-                }
-
-                return result.data; // ສົ່ງຄືນສະເພາະ data
-
-            } catch (error) {
-                // ຖ້າ fetch ລົ້ມເຫຼວ (ເຊັ່ນ: net::ERR_FAILED, CORS)
-                console.error(`Error calling ${functionName}:`, error);
-                throw error; // ສົ່ງ error ຕໍ່
-            }
-        }
-
-
-        // --- AUTHENTICATION ---
-        function renderAuthSection() {
-            const isUser = !!state.currentUser;
-            el('auth-section').innerHTML = `<button id="auth-btn" class="px-4 py-2 font-semibold rounded-lg transition-colors text-sm sm:text-base ${isUser ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-600 text-white hover:bg-green-700'}">${isUser ? `<i class="fas fa-sign-out-alt mr-2"></i>ອອກຈາກລະບົບ (${state.currentUser.name})` : `<i class="fas fa-user-circle mr-2"></i> ເຂົ້າສູ່ລະບົບ`}</button>`;
-            el('auth-btn').onclick = isUser ? () => { state.currentUser = null; initializeApp(); } : () => { switchView('login-view'); el('public-search-view').classList.add('hidden'); };
-        }
-
-        // UPDATED:
-        el('login-form').addEventListener('submit', async (e) => { // <-- ປ່ຽນເປັນ async
-            e.preventDefault();
-            const loginErrorEl = el('login-error');
-            loginErrorEl.classList.add('hidden');
-            showLoader('ກຳລັງກວດສອບ...');
-
-            try { // <-- ໃຊ້ try...catch
-                const res = await serverFunction('login', [el('room-number').value.trim().toUpperCase(), el('password').value]);
-                
-                // .withSuccessHandler logic (serverFunction ຈະສົ່ງ data ໂດຍກົງ)
-                hideLoader();
-                if (res.success) { 
-                    state.currentUser = res.user; 
-                    initializeApp(); 
-                } 
-                else { 
-                    loginErrorEl.textContent = res.message; 
-                    loginErrorEl.classList.remove('hidden');
-                    showAlert('ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ', res.message, 'error');
-                }
-            } catch (err) { // <-- .withFailureHandler logic (ຈັບ error ຈາກ serverFunction)
-                hideLoader(); 
-                loginErrorEl.textContent = 'ເກີດຂໍ້ຜິດພາດ: ' + err.message; 
-                loginErrorEl.classList.remove('hidden');
-                showAlert('ເກີດຂໍ້ຜິດພາດ', err.message, 'error');
-            }
-        });
-
-        // --- DASHBOARD RENDERING ---
-        // UPDATED:
-        async function loadDashboard(roomNumber, isPublic = false) { // <-- ປ່ຽນເປັນ async
-            showLoader('ກຳລັງໂຫຼດຂໍ້ມູນ...');
-            try { // <-- ໃຊ້ try...catch
-                const data = await serverFunction('getTenantData', [roomNumber]);
-                // .withSuccessHandler logic (data ມາຈາກ serverFunction)
-                renderDashboard(data, isPublic);
-            } catch (e) {
-                // .withFailureHandler logic
-                hideLoader(); 
-                showAlert('ຜິດພາດ!', e.message, 'error'); 
-            }
-        }
-
-        function renderDashboard(data, isPublic = false) {
-            // ໝາຍເຫດ: ຟັງຊັນນີ້ບໍ່ໄດ້ປ່ຽນແປງ ເພາະ serverFunction ໄດ້ສົ່ງ data ໃນຮູບແບບທີ່ຄາດຫວັງໄວ້ແລ້ວ
-            
-            const { tenantInfo, paymentDetails } = data;
-            state.monthlyRent = tenantInfo.monthlyRent;
-
-            const photoHTML = tenantInfo.photoUrl
-                ? `<img src="${tenantInfo.photoUrl.replace("view?usp=sharing", "uc?export=view")}" alt="ຮູບຜູ້ເຊົ່າ" class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg">`
-                : `<div class="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-lg"><i class="fa-solid fa-user text-5xl text-slate-400"></i></div>`;
-            
-            const userInfoHTML = `<div class="flex flex-col items-center">${photoHTML}<h2 class="mt-4 text-2xl font-bold text-center text-slate-800">${tenantInfo.name}</h2><p class="text-sm text-slate-500 text-center">${tenantInfo.department}</p></div><hr class="my-5 border-t border-slate-200"><div class="space-y-3 text-sm"><div class="flex justify-between items-center"><span class="text-slate-500"><i class="fas fa-door-open w-5 mr-2"></i>ເບີຫ້ອງ:</span><span class="px-3 py-1 bg-slate-100 text-slate-800 font-bold rounded-full">${tenantInfo.room}</span></div><div class="flex justify-between items-center"><span class="text-slate-500"><i class="fas fa-phone w-5 mr-2"></i>ເບີໂທ:</span><span class="font-medium">${tenantInfo.phone}</span></div><div class="flex justify-between items-center"><span class="text-slate-500"><i class="fas fa-calendar-alt w-5 mr-2"></i>ວັນທີເຂົ້າ:</span><span class="font-medium">${tenantInfo.startDate}</span></div><div class="flex justify-between items-center">
-
-<span class="text-slate-500">
-  <i class="fas fa-file-contract w-5 mr-2"></i>ສັນຍາເຂົ້າພັກເຊົ່າ:
-</span>
-${
-  tenantInfo.contractUrl && tenantInfo.contractUrl.trim() !== ''
-    ? `<a href="${tenantInfo.contractUrl}" target="_blank"
-        class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full hover:bg-green-200 transition">
-        ເປີດເບິ່ງ
-      </a>`
-    : `<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
-        ຍັງບໍ່ມີຂໍ້ມູນ
-      </span>`
-}
-
-
-            </div><hr class="my-3 border-t border-slate-200"><div class="flex justify-between items-center p-3 bg-green-50 rounded-lg"><span class="font-bold text-green-700"><i class="fas fa-money-bill-wave w-5 mr-2"></i>ຄ່າເຊົ່າ/ເດືອນ:</span><span class="font-bold text-xl text-green-600">${formatCurrency(tenantInfo.monthlyRent)}</span></div></div>`;
-
-            const paymentDetailsHTML = renderPaymentDetailsHTML(paymentDetails);
-            
-            if (isPublic) {
-                el('public-initial-message').classList.add('hidden');
-                el('public-report-content').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div class="md:col-span-1 space-y-6"><div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">${userInfoHTML}</div></div><div class="md:col-span-2 space-y-6">${paymentDetailsHTML}</div></div>`;
-                el('public-report-content').classList.remove('hidden');
-            } else {
-                el('user-info-card').innerHTML = userInfoHTML;
-                el('payment-details-content').innerHTML = paymentDetailsHTML;
-                el('payment-name').value = tenantInfo.name;
-                el('payment-room').value = tenantInfo.room;
-                el('payment-months').value = paymentDetails.nextPaymentMonth;
-                
-                // === NEW LOGIC FOR HINT TEXT START ===
-                const allPaidMonthsSorted = [];
-                Object.keys(paymentDetails.paidByYear)
-                    .sort((a, b) => a - b) // Sort years ascending
-                    .forEach(year => {
-                        // months are already sorted within the year object
-                        paymentDetails.paidByYear[year].forEach(m => {
-                            allPaidMonthsSorted.push(`${m.month}/${year}`);
-                        });
-                    });
-                
-                const lastThreePaid = allPaidMonthsSorted.slice(-3);
-                let hintText = "";
-                if (lastThreePaid.length > 0) {
-                    const firstYear = lastThreePaid[0].split('/')[1];
-                    const sameYear = lastThreePaid.every(m => m.split('/')[1] === firstYear);
-                    
-                    let formattedMonths;
-                    if (sameYear) {
-                        formattedMonths = lastThreePaid.map(m => m.split('/')[0]).join(',') + `/${firstYear}`;
-                    } else {
-                        formattedMonths = lastThreePaid.join(', ');
-                    }
-                    hintText = `ຈ່າຍລ່າສຸດ: ${formattedMonths} (ເດືອນຖັດໄປ: ${paymentDetails.nextPaymentMonth})`;
-                } else {
-                    hintText = `(ເດືອນຖັດໄປ: ${paymentDetails.nextPaymentMonth})`;
-                }
-                el('payment-month-hint').textContent = hintText;
-                // === NEW LOGIC FOR HINT TEXT END ===
-
-                setupPaymentForm();
-                // handleMonthInputChange(); // <-- ໂຕເກົ່າ
-                handleMonthInput(el('payment-months'), el('payment-amount'), el('payment-months-error')); // <-- ໂຕໃໝ່
-            }
-
-            const isAdminView = !isPublic && state.currentUser && state.currentUser.role === 'Admin';
-            if (isAdminView) {
-                 el('print-report-btn').disabled = false;
-                 el('print-report-btn').onclick = () => printReport(tenantInfo, paymentDetails);
-            }
-
-            hideLoader();
-        }
-
-        function toggleAccordion(button) {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('i');
-            content.classList.toggle('open');
-            icon.classList.toggle('rotate-180');
-        }
-        
-        function renderPaymentDetailsHTML(details) {
-            const { totalPaid, totalOverdue, paidByYear, paidCount, overdue, advancePayments } = details;
-
-            let advancePaymentHTML = '';
-            if (advancePayments && advancePayments.amount > 0) {
-                advancePaymentHTML = `
-                <div class="bg-teal-50 border-l-4 border-teal-500 p-4 rounded-r-lg shadow" role="alert">
-                    <p class="font-bold flex items-center text-teal-800"><i class="fas fa-star mr-2"></i>ຂໍ້ມູນການຈ່າຍລ່ວງໜ້າ</p>
-                    <div class="mt-2 pl-1">
-                        <p class="text-sm text-teal-700">ຈຳນວນເງິນ: <span class="font-bold text-lg">${formatCurrency(advancePayments.amount)}</span></p>
-                        <p class="text-sm text-teal-700 mt-1">ເດືອນທີ່ຈ່າຍລ່ວງໜ້າ (${advancePayments.months.length} ເດືອນ):</p>
-                        <div class="flex flex-wrap gap-2 mt-2">
-                            ${advancePayments.months.map(m => `<span class="px-3 py-1 rounded-full font-medium bg-teal-200 text-teal-900 text-sm">${m}</span>`).join('')}
-                        </div>
-                    </div>
-                </div>`;
-            }
-
-            const years = Object.keys(paidByYear).sort((a, b) => b - a);
-            const paidMonthsAccordionHTML = !years.length ? '<span class="text-slate-400">ບໍ່ມີລາຍການ</span>' : years.map(year => {
-                const monthButtonsHTML = paidByYear[year].map(m => {
-                    const details = m.receiptDetails; // { url: '...', id: 123, fileId: '...' }
-                    const monthYear = `${m.month}/${year}`;
-                    const isCash = !details.url || details.url === '#';
-                    const isAdmin = state.currentUser && state.currentUser.role === 'Admin';
-                    
-                    let onClickAction;
-                    let buttonClass;
-
-                    if (isAdmin) {
-                        // **FIX**: Encode JSON string for HTML attribute, replacing " with &quot;
-                        const detailsJson = JSON.stringify(details).replace(/"/g, '&quot;');
-                        // This single function will now open the Admin Action Modal
-                        onClickAction = `showAdminPaymentModal('${detailsJson}', '${monthYear}')`;
-                        buttonClass = isCash
-                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' // Admin + Cash
-                            : 'bg-blue-100 text-blue-800 hover:bg-blue-200'; // Admin + Transfer
-                    } else {
-                        // User clicking (non-admin)
-                        onClickAction = `showReceipt('${details.url}', '${monthYear}')`;
-                        buttonClass = isCash 
-                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' // User + Cash
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'; // User + Transfer
-                    }
-
-                    return `<button onclick="${onClickAction}" class="px-3 py-1 rounded-full font-medium ${buttonClass} transition">ເດືອນ ${m.month}</button>`;
-                }).join('');
-
-                return `<div class="border-b last:border-b-0">
-                            <button onclick="toggleAccordion(this)" class="w-full flex justify-between items-center text-left p-3 bg-slate-50 hover:bg-slate-100 transition">
-                                <span class="font-semibold text-slate-700">ປີ ${year}</span>
-                                <span><i class="fas fa-chevron-down transition-transform"></i></span>
-                            </button>
-                            <div class="accordion-content">
-                                <div class="p-3 bg-white">
-                                    <div class="flex flex-wrap gap-2 text-sm">${monthButtonsHTML}</div>
-                                </div>
-                            </div>
-                        </div>`;
-            }).join('');
-
-            const overdueHTML = !overdue.length ? '<span class="text-slate-400">ບໍ່ມີລາຍການ</span>' : `<div class="flex flex-wrap gap-2 text-sm">${overdue.map(m => `<span class="px-3 py-1 rounded-full font-medium bg-red-100 text-red-800">${m}</span>`).join('')}</div>`;
-
-            return `<div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200"><h3 class="text-xl font-bold mb-4 border-b pb-3">ສະຫຼຸບການຈ່າຍເງິນ</h3><div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center"><div class="bg-green-50 p-4 rounded-lg border border-green-200"><p class="text-sm text-green-600 font-semibold">ຈ່າຍແລ້ວທັງໝົດ</p><p class="text-2xl font-bold text-green-700">${formatCurrency(totalPaid)}</p></div><div class="bg-red-50 p-4 rounded-lg border border-red-200"><p class="text-sm text-red-600 font-semibold">ຄ້າງຈ່າຍທັງໝົດ</p><p class="text-2xl font-bold text-red-700">${formatCurrency(totalOverdue)}</p></div></div></div>${advancePaymentHTML}<div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200"><h3 class="text-xl font-bold mb-4 border-b pb-3">ລາຍລະອຽດແຕ່ລະເດືອນ</h3><div class="space-y-4"><div><h4 class="font-semibold text-red-600 mb-2">ເດືອນທີ່ຄ້າງຈ່າຍ (${overdue.length})</h4>${overdueHTML}</div><hr><div><h4 class="font-semibold text-green-600 mb-2">ເດືອນທີ່ຈ່າຍແລ້ວ (${paidCount})</h4><div class="accordion-container rounded-lg border overflow-hidden">${paidMonthsAccordionHTML}</div></div></div></div>`;
-        }
-
-        // --- PAYMENT FORM ---
-        // el('payment-months').addEventListener('input', handleMonthInputChange); // <-- ໂຕເກົ່າ
-        el('payment-months').addEventListener('input', () => { // <-- ໂຕໃໝ່
-            handleMonthInput(el('payment-months'), el('payment-amount'), el('payment-months-error'));
-        });
-        
-        // function handleMonthInputChange() { // <-- ໂຕເກົ່າ
-        function handleMonthInput(monthInputEl, amountInputEl, errorEl) { // <-- ປັບປຸງຟັງຊັນນີ້
-            // const monthsInput = el('payment-months'); // <-- ໂຕເກົ່າ
-            // const amountInput = el('payment-amount'); // <-- ໂຕເກົ່າ
-            // const errorEl = el('payment-months-error'); // <-- ໂຕເກົ່າ
-            // const value = monthsInput.value.trim(); // <-- ໂຕເກົ່າ
-            const value = monthInputEl.value.trim(); // <-- ໂຕໃໝ່
-
-            const validFormatRegex = /^\d{1,2}(\s*,\s*\d{1,2})*\/\d{4}$/;
-
-            if (value === '' || validFormatRegex.test(value)) {
-                // monthsInput.classList.remove('border-red-500'); // <-- ໂຕເກົ່າ
-                // monthsInput.classList.add('border-slate-300'); // <-- ໂຕເກົ່າ
-                monthInputEl.classList.remove('border-red-500'); // <-- ໂຕໃໝ່
-                monthInputEl.classList.add('border-slate-300'); // <-- ໂຕໃໝ່
-                if (errorEl) { // <-- ໂຕໃໝ່
-                    errorEl.classList.add('hidden');
-                    errorEl.textContent = '';
-                }
-
-                if (validFormatRegex.test(value)) {
-                    const parts = value.split('/');
-                    const monthCount = parts[0].split(',').filter(m => m.trim() !== '').length;
-                    const rawAmount = monthCount * state.monthlyRent; // <-- ຄຳນວນໂດຍໃຊ້ state.monthlyRent
-                    
-                    // amountInput.value = rawAmount > 0 ? new Intl.NumberFormat('lo-LA').format(rawAmount) : ''; // <-- ໂຕເກົ່າ
-
-                    if (amountInputEl.type === 'text') { // ແບບຟອມບັນທຶກໃໝ່
-                        amountInputEl.value = rawAmount > 0 ? new Intl.NumberFormat('lo-LA').format(rawAmount) : ''; // <-- ໂຕໃໝ່
-                    } else { // ແບບຟອມແກ້ໄຂ (type="number")
-                        amountInputEl.value = rawAmount > 0 ? rawAmount : ''; // <-- ໂຕໃໝ່
-                    }
-                } else {
-                    // amountInput.value = ''; // <-- ໂຕເກົ່າ
-                    amountInputEl.value = ''; // <-- ໂຕໃໝ່
-                }
-            } else {
-                // monthsInput.classList.add('border-red-500'); // <-- ໂຕເກົ່າ
-                // monthsInput.classList.remove('border-slate-300'); // <-- ໂຕເກົ່າ
-                monthInputEl.classList.add('border-red-500'); // <-- ໂຕໃໝ່
-                monthInputEl.classList.remove('border-slate-300'); // <-- ໂຕໃໝ່
-                if (errorEl) { // <-- ໂຕໃໝ່
-                    errorEl.textContent = 'ຮູບແບບບໍ່ຖືກຕ້ອງ (ຕົວຢ່າງ: 7/2025 ຫຼື 7,8/2025)';
-                    errorEl.classList.remove('hidden');
-                }
-                // amountInput.value = ''; // <-- ໂຕເກົ່າ
-                amountInputEl.value = ''; // <-- ໂຕໃໝ່
-            }
-        }
-
-        function setupPaymentForm() {
-            if (!state.currentUser) return;
-            const methodSelect = el('payment-method');
-            methodSelect.innerHTML = '';
-            const options = (state.currentUser.role === 'Admin') ? ['ເງິນໂອນ', 'ເງິນສົດ'] : ['ເງິນໂອນ'];
-            options.forEach(opt => methodSelect.add(new Option(opt, opt)));
-            methodSelect.onchange = handlePaymentMethodChange;
-            handlePaymentMethodChange();
-        }
-
-        function handlePaymentMethodChange() {
-            const isTransfer = el('payment-method').value === 'ເງິນໂອນ';
-            el('payment-receipt').required = isTransfer;
-            el('receipt-required-star').classList.toggle('hidden', !isTransfer);
-        }
-
-        // UPDATED:
-        el('payment-form').addEventListener('submit', async (e) => { // <-- ປ່ຽນເປັນ async
-            e.preventDefault();
-            const fileInput = el('payment-receipt');
-            const file = fileInput.files[0];
-            const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-
-            if (file && file.size > MAX_SIZE) {
-                showAlert('ຂະໜາດໄຟລ໌ໃຫຍ່ເກີນໄປ', 'ກະລຸນາເລືອກໄຟລ໌ທີ່ມີຂະໜາດບໍ່ເກີນ 5MB.', 'error');
-                fileInput.value = ''; // Clear the file input
-                return;
-            }
-
-            const data = { 
-                name: el('payment-name').value, 
-                room: el('payment-room').value, 
-                months: el('payment-months').value.trim(), 
-                amount: el('payment-amount').value.replace(/[.,]/g, ''), 
-                method: el('payment-method').value, 
-                recordedBy: state.currentUser.name, 
-                file: null 
-            };
-            
-            if (file) {
-                showLoader('ກຳລັງອັບໂຫຼດໄຟລ໌...');
-                const reader = new FileReader();
-                reader.onload = e => { 
-                    data.file = { base64: e.target.result.split(',')[1], mimeType: file.type, name: file.name }; 
-                    submitPayment(data); // submitPayment ຕອນນີ້ເປັນ async
-                };
-                reader.readAsDataURL(file);
-            } else { 
-                submitPayment(data); // submitPayment ຕອນນີ້ເປັນ async
-            }
-        });
-
-        // UPDATED:
-        async function submitPayment(data) { // <-- ປ່ຽນເປັນ async
-            showLoader('ກຳລັງບັນທຶກ...');
-            try { // <-- ໃຊ້ try...catch
-                const res = await serverFunction('addPaymentRecord', [data]);
-
-                // .withSuccessHandler logic (res ມາຈາກ data ໂດຍກົງ)
-                hideLoader();
-                if(res.success) {
-                    showAlert('ສຳເລັດ!', res.message, 'success');
-                    el('payment-form').reset();
-                    el('file-name-display').textContent = '';
-                    loadDashboard(data.room); 
-                } else { 
-                    showAlert('ຜິດພາດ!', res.message, 'error'); 
-                }
-            } catch (err) {
-                // .withFailureHandler logic
-                hideLoader(); 
-                showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error');
-            }
-        }
-        
-        // --- ADMIN & PUBLIC FUNCTIONS ---
-        // UPDATED:
-        async function initializeAdminDashboard() { // <-- ປ່ຽນເປັນ async
-            el('admin-controls').classList.remove('hidden');
-            el('admin-actions-container').innerHTML = `
-                <div class="bg-white p-4 rounded-2xl shadow-xl border border-slate-200">
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button id="print-report-btn" disabled class="flex-1 py-3 bg-slate-500 text-white font-bold rounded-lg focus:outline-none focus:ring-4 focus:ring-slate-300 shadow-lg transition-all duration-300 cursor-not-allowed">
-                            <i class="fas fa-print mr-2"></i>ພິມລາຍງານ (ບຸກຄົນ)
-                        </button>
-                        <button id="print-summary-report-btn" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg transition-all duration-300">
-                            <i class="fas fa-file-invoice mr-2"></i>ພິມລາຍງານ (ລວມ)
-                        </button>
-                    </div>
-                </div>`;
-            
-            showLoader('ກຳລັງໂຫຼດລາຍຊື່...');
-            try { // <-- ໃຊ້ try...catch
-                const tenants = await serverFunction('getAllTenants');
-
-                // .withSuccessHandler logic
-                const select = el('tenant-select');
-                select.innerHTML = '<option value="">-- ເລືອກຜູ້ເຊົ່າ --</option>';
-                tenants.forEach(t => select.innerHTML += `<option value="${t.room}">[${t.room}] - ${t.name}</option>`);
-                if (tenants.some(t => t.room === state.currentUser.room)) { 
-                    select.value = state.currentUser.room; 
-                    loadDashboard(state.currentUser.room); 
-                } else { 
-                    hideLoader();
-                    el('user-info-card').innerHTML = '<div class="text-center p-4">ກະລຸນາເລືອກຜູ້ເຊົ່າຈາກລາຍການ</div>';
-                    el('payment-details-content').innerHTML = '';
-                }
-            } catch (err) {
-                // .withFailureHandler logic
-                hideLoader(); 
-                showAlert('ຜິດພາດ!', err.message, 'error'); 
-            }
-            
-            el('tenant-select').onchange = () => {
-                const selectedRoom = el('tenant-select').value;
-                const individualPrintBtn = el('print-report-btn');
-                if (selectedRoom) {
-                    individualPrintBtn.classList.remove('bg-slate-500', 'cursor-not-allowed');
-                    individualPrintBtn.classList.add('bg-slate-700', 'hover:bg-slate-800');
-                    loadDashboard(selectedRoom);
-                } else {
-                     individualPrintBtn.disabled = true;
-                     individualPrintBtn.classList.add('bg-slate-500', 'cursor-not-allowed');
-                     individualPrintBtn.classList.remove('bg-slate-700', 'hover:bg-slate-800');
-                     el('user-info-card').innerHTML = '<div class="text-center p-4">ກະລຸນາເລືອກຜູ້ເຊົ່າຈາກລາຍການ</div>';
-                     el('payment-details-content').innerHTML = '';
-                }
-            };
-            
-            // UPDATED:
-            el('print-summary-report-btn').onclick = async () => { // <-- ປ່ຽນເປັນ async
-                showLoader('ກຳລັງສ້າງລາຍງານລວມ...');
-                try { // <-- ໃຊ້ try...catch
-                    const data = await serverFunction('getAllTenantsReportData');
-                    // .withSuccessHandler logic
-                    hideLoader();
-                    printSummaryReport(data);
-                } catch (err) {
-                    // .withFailureHandler logic
-                    hideLoader();
-                    showAlert('ຜິດພາດ!', 'ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error');
-                }
-            };
-        }
-
-        const performPublicSearch = () => {
-            const room = el('public-room-input').value.trim().toUpperCase();
-            if(!room) return showAlert('ແຈ້ງເຕືອນ', 'ກະລຸນາປ້ອນເບີຫ້ອງ', 'warning');
-            loadDashboard(room, true);
-        };
-       
-        // --- MODAL & RECEIPT HANDLING ---
-        const receiptModal = el('receipt-viewer-modal');
-        const cashModal = el('cash-notice-modal');
-        const showReceipt = (url, month) => {
-            if (!url || url === '#') { el('cash-modal-month').textContent = `ເດືອນ ${month}`; cashModal.classList.remove('hidden'); cashModal.classList.add('flex'); } 
-            else { el('modal-receipt-link').href = url; receiptModal.classList.remove('hidden'); receiptModal.classList.add('flex'); }
-        };
-        const closeReceiptModal = () => { receiptModal.classList.add('hidden'); receiptModal.classList.remove('flex'); };
-        const closeCashModal = () => { cashModal.classList.add('hidden'); cashModal.classList.remove('flex'); };
-
-        // === UPDATED ADMIN MODAL FUNCTIONS START ===
-        const adminPaymentModal = el('admin-payment-modal');
-        const editPaymentModal = el('edit-payment-modal');
-
-        function showAdminPaymentModal(detailsJson, monthYear) {
-            const details = JSON.parse(detailsJson); // { id: 123, url: '#', fileId: null } for cash
-            
-            el('admin-modal-month').textContent = monthYear;
-            
-            const viewLink = el('admin-modal-view-link');
-            const editBtn = el('admin-modal-edit-btn');
-            const deleteBtn = el('admin-modal-delete-btn');
-
-            if (details.url && details.url !== '#') {
-                viewLink.href = details.url;
-                viewLink.classList.remove('hidden');
-            } else {
-                viewLink.href = '#';
-                viewLink.classList.add('hidden'); // Hide "View" button
-            }
-
-            // Re-clone edit button
-            const newEditBtn = editBtn.cloneNode(true);
-            newEditBtn.innerHTML = '<i class="fa-solid fa-pen-to-square w-6 text-center mr-3"></i> ແກ້ໄຂຂໍ້ມູນ';
-            editBtn.parentNode.replaceChild(newEditBtn, editBtn);
-            // This now calls the function to open the NEW form
-            newEditBtn.onclick = () => showEditForm(details.id);
-
-            // Re-clone delete button
-            const newDeleteBtn = deleteBtn.cloneNode(true);
-            newDeleteBtn.innerHTML = '<i class="fa-solid fa-trash w-6 text-center mr-3"></i> ລົບຂໍ້ມູນ';
-            deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
-            newDeleteBtn.onclick = () => handleDeletePayment(details.id, details.fileId);
-
-            adminPaymentModal.classList.remove('hidden');
-            adminPaymentModal.classList.add('flex');
-        }
-
-        function closeAdminPaymentModal() {
-            adminPaymentModal.classList.add('hidden');
-            adminPaymentModal.classList.remove('flex');
-        }
-
-        // --- NEW FUNCTIONS FOR FULL EDIT MODAL ---
-
-        function closeEditPaymentModal() {
-            el('edit-payment-error').classList.add('hidden'); // Hide error on close
-            editPaymentModal.classList.add('hidden');
-            editPaymentModal.classList.remove('flex');
-        }
-
-        // UPDATED:
-        // 1. Called when Admin clicks "Edit"
-        async function showEditForm(paymentId) { // <-- ປ່ຽນເປັນ async
-            closeAdminPaymentModal();
-            showLoader('ກຳລັງໂຫຼດຂໍ້ມູນແກ້ໄຂ...');
-            try { // <-- ໃຊ້ try...catch
-                const record = await serverFunction('getPaymentRecordById', [paymentId]);
-                // .withSuccessHandler logic
-                populateEditForm(record);
-            } catch (err) {
-                // .withFailureHandler logic
-                hideLoader();
-                showAlert('ຜິດພາດ!', err.message, 'error');
-            }
-        }
-
-        // 2. Fills the new modal with data from backend
-        function populateEditForm(record) {
-            el('edit-payment-id').value = record.id;
-            el('edit-payment-date').value = record.date; // Expects "YYYY-MM-DD"
-            el('edit-payment-name').value = record.name;
-            el('edit-payment-months').value = record.months;
-            el('edit-payment-amount').value = record.amount;
-            el('edit-payment-method').value = record.method;
-            el('edit-payment-link').value = record.receiptUrl;
-            el('edit-payment-error').classList.add('hidden'); // Hide error on populate
-            
-            hideLoader();
-            editPaymentModal.classList.remove('hidden');
-            editPaymentModal.classList.add('flex');
-        }
-
-        // UPDATED:
-        // 3. Handles submission of the new edit form (IMPROVED VALIDATION)
-        async function handleEditSubmit(e) { // <-- ປ່ຽນເປັນ async
-            e.preventDefault();
-            const errorEl = el('edit-payment-error');
-            errorEl.classList.add('hidden'); // Hide previous errors
-
-            const updatedRecord = {
-                id: el('edit-payment-id').value,
-                date: el('edit-payment-date').value,
-                name: el('edit-payment-name').value,
-                months: el('edit-payment-months').value.trim(),
-                amount: parseFloat(el('edit-payment-amount').value) || 0,
-                method: el('edit-payment-method').value,
-                receiptUrl: el('edit-payment-link').value.trim()
-            };
-
-            // === Client-side quick checks ===
-            if (!updatedRecord.months || !updatedRecord.amount || !updatedRecord.date) {
-                errorEl.textContent = 'ກະລຸນາຕື່ມຂໍ້ມູນ ວັນທີ, ເດືອນ/ປີ, ແລະ ຈຳນວນເງິນ';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            const validFormatRegex = /^\d{1,2}(\s*,\s*\d{1,2})*\/\d{4}$/;
-            if (!validFormatRegex.test(updatedRecord.months)) {
-                errorEl.textContent = 'ຮູບແບບເດືອນ/ປີ ບໍ່ຖືກຕ້ອງ (ຕົວຢ່າງ: 7/2025 ຫຼື 7,8/2025).';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-            // === End client-side checks ===
-
-
-            showLoader('ກຳລັງກວດສອບ ແລະ ບັນທຶກ...');
-
-            try { // <-- ໃຊ້ try...catch
-                const res = await serverFunction('updatePaymentRecord', [updatedRecord]);
-
-                // .withSuccessHandler logic
-                hideLoader();
-                // res ຈະມີ { success: true, message: ... }
-                showAlert('ສຳເລັດ!', res.message, 'success');
-                closeEditPaymentModal();
-                // Refresh dashboard
-                const selectedRoom = el('tenant-select').value;
-                if (selectedRoom) loadDashboard(selectedRoom);
-            } catch (err) {
-                // .withFailureHandler logic
-                hideLoader();
-                // ຖ້າເປັນ error ຈາກ validation (ເຊັ່ນ: ເດືອນຊ້ຳ)
-                if (err.message.includes('ຂໍ້ມູນຊ້ຳ') || err.message.includes('ຂໍ້ມູນບໍ່ຕໍ່ເນື່ອງ') || err.message.includes('ຮູບແບບ')) {
-                    errorEl.textContent = err.message; // Show server error
-                    errorEl.classList.remove('hidden');
-                } else {
-                    // ຖ້າເປັນ error ທົ່ວໄປ
-                    showAlert('ຜິດພາດ!', err.message, 'error');
-                }
-            }
-        }
-
-        // UPDATED:
-        function handleDeletePayment(paymentId, fileId) { // ບໍ່ຈຳເປັນຕ້ອງ async ຢູ່ບ່ອນນີ້
-            Swal.fire({
-                title: 'ຢືນຢັນການລົບ',
-                text: `ທ່ານຕ້ອງການລົບລາຍການຈ່າຍເງິນນີ້ແທ້ບໍ່? ຂໍ້ມູນ ແລະ ໄຟລ໌ທີ່ຕິດຄັດ (ຖ້າມີ) ຈະຖືກລົບຖາວອນ!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'ລົບ!',
-                cancelButtonText: 'ຍົກເລີກ',
-                customClass: { popup: 'swal2-popup' } // Keep Lao font
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // ຕອນນີ້ເຮົາເອີ້ນ async function ຢູ່ດ້ານໃນ
-                    executeDeletion(paymentId, fileId);
-                }
-            });
-        }
-
-        // UPDATED: ຟັງຊັນຊ່ວຍໃໝ່
-        async function executeDeletion(paymentId, fileId) { // <-- ປ່ຽນເປັນ async
-             showLoader('ກຳລັງລົບ...');
-            try { // <-- ໃຊ້ try...catch
-                const res = await serverFunction('deletePaymentRecord', [paymentId, fileId]);
-                
-                // .withSuccessHandler logic
-                hideLoader();
-                showAlert('ສຳເລັດ!', res.message, 'success');
-                closeAdminPaymentModal();
-                // Refresh dashboard
-                const selectedRoom = el('tenant-select').value;
-                if (selectedRoom) loadDashboard(selectedRoom);
-            } catch (err) {
-                // .withFailureHandler logic
-                hideLoader();
-                showAlert('ຜິດພາດ!', err.message, 'error');
-            }
-        }
-        // === UPDATED ADMIN MODAL FUNCTIONS END ===
-
-        // --- PRINTING & EXPORT FUNCTIONS ---
-        function printReport(tenantInfo, paymentDetails) {
-            state.reportDataForExport = { tenantInfo, paymentDetails }; // Save data for export
-            
-            const { totalPaid, totalOverdue, paidByYear, overdue, advancePayments } = paymentDetails;
-            let paymentRows = '';
-            let paymentCounter = 1;
-            const sortedYears = Object.keys(paidByYear).sort((a, b) => a - b);
-
-            sortedYears.forEach(year => {
-                const monthsInYear = paidByYear[year].map(m => m.month).sort((a,b) => parseInt(a) - parseInt(b));
-                const amountInYear = monthsInYear.length * tenantInfo.monthlyRent;
-                paymentRows += `
-                    <tr>
-                        <td class="center">${paymentCounter++}</td>
-                        <td>ການຊຳລະຄ່າຫໍພັກ ປີ ${year}</td>
-                        <td>${monthsInYear.join(', ')}/${year}</td>
-                        <td class="right">${formatCurrency(amountInYear)}</td>
-                    </tr>
-                `;
-            });
-            if (paymentRows === '') {
-                paymentRows = '<tr><td colspan="4" class="center"><i>ບໍ່ມີປະຫວັດການຊຳລະ</i></td></tr>';
-            }
-            
-            const overdueText = overdue.length > 0 ? overdue.join(', ') : 'ບໍ່ມີ';
-
-            const reportWindow = window.open('', '_blank', 'height=800,width=800');
-            reportWindow.document.write(`
-                <html>
-                    <head>
-                        <title>ລາຍງານການຊຳລະຄ່າຫໍພັກ - ${tenantInfo.name}</title>
-                        <link rel="preconnect" href="https://fonts.googleapis.com">
-                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                        <link href="https://fonts.googleapis.com/css2?family=Phetsarath+OT:wght@400;700&display=swap" rel="stylesheet">
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-                        <style>
-                            body { font-family: 'Phetsarath OT', sans-serif; margin: 1rem; color: #333; background-color: #f9fafb; font-size: 12px; }
-                            .container { max-width: 700px; margin: auto; background-color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                            .actions { position: fixed; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
-                            .actions button { background-color: #16a34a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; font-family: 'Phetsarath OT', sans-serif; font-size: 12px; }
-                            .actions button.excel-btn { background-color: #059669; }
-                            .report-header { text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #16a34a; padding-bottom: 0.8rem; }
-                            .report-header img { height: 50px; margin-bottom: 0.4rem; }
-                            .report-header h1 { color: #15803d; font-size: 1.5rem; margin: 0; }
-                            .report-header p { margin: 0.2rem 0; font-size: 0.9rem; color: #555; }
-                            h2 { color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.4rem; margin-top: 1.5rem; font-size: 1.1rem; }
-                            .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 1.5rem; margin-top: 0.8rem; }
-                            .info-grid div { display: flex; flex-direction: column; }
-                            .info-grid span:first-child { font-weight: bold; color: #4b5563; margin-bottom: 0.1rem; }
-                            .info-grid span:last-child { font-weight: normal; color: #1f2937; }
-                            table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-                            th, td { border: 1px solid #d1d5db; padding: 0.4rem 0.6rem; text-align: left; }
-                            th { background-color: #f3f4f6; color: #1f2937; font-weight: bold; }
-                            .center { text-align: center; }
-                            .right { text-align: right; }
-                            .summary-section { margin-top: 1rem; padding: 1rem; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
-                            .summary-section div { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #e5e7eb; }
-                            .summary-section div:last-child { border-bottom: none; }
-                            .summary-section span { color: #374151; }
-                            .summary-section strong { color: #111827; font-size: 1em; }
-                            .summary-section .overdue-text { color: #ef4444; font-weight: bold; }
-                            .signature-section { margin-top: 3rem; text-align: right; }
-                            @media print { 
-                                @page { size: A4; margin: 0.5in; } 
-                                body { margin: 0; background-color: #fff; font-size: 11px; } 
-                                .container { box-shadow: none; border: none; padding: 0.5rem; }
-                                .no-print { display: none; } 
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                             <div class="actions no-print">
-                                <button onclick="window.print()"><i class="fas fa-print"></i> ພິມ</button>
-                                <button class="excel-btn" onclick="window.opener.exportIndividualReportAsCsv()"><i class="fas fa-file-excel"></i> ສົ່ງອອກ Excel</button>
-                             </div>
-                             <div class="report-header">
-                                <!-- <img src="https://i.ibb.co/F4VGPVB1/image.png" alt="Logo">-->
-                                <h1>ໃບລາຍງານການຊຳລະຄ່າຫໍພັກ</h1>
-                                <p>ວັນທີພິມ: ${new Date().toLocaleDateString('lo-LA', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                            </div>
-                            <h2>ຂໍ້ມູນຜູ້ເຊົ່າ</h2>
-                            <div class="info-grid">
-                                <div><span>ຊື່ ແລະ ນາມສະກຸນ:</span><span>${tenantInfo.name}</span></div>
-                                <div><span>ເບີຫ້ອງ:</span><span>${tenantInfo.room}</span></div>
-                                <div><span>ພະແນກ:</span><span>${tenantInfo.department}</span></div>
-                                <div><span>ເບີໂທ:</span><span>${tenantInfo.phone}</span></div>
-                                <div><span>ວັນທີເຂົ້າ:</span><span>${tenantInfo.startDate}</span></div>
-                                <div><span>ຄ່າເຊົ່າ/ເດືອນ:</span><span>${formatCurrency(tenantInfo.monthlyRent)}</span></div>
-                            </div>
-                            <h2>ປະຫວັດການຊຳລະ</h2>
-                            <table>
-                                <thead><tr><th class="center">ລ/ດ</th><th>ລາຍການ</th><th>ເດືອນ/ປີ</th><th class="right">ຈຳນວນເງິນ (ກີບ)</th></tr></thead>
-                                <tbody>${paymentRows}</tbody>
-                            </table>
-                            <h2>ສະຫຼຸບລວມ</h2>
-                            <div class="summary-section">
-                                <div><span>ຈ່າຍແລ້ວທັງໝົດ:</span><strong>${formatCurrency(totalPaid)}</strong></div>
-                                <div><span>ຄ້າງຈ່າຍທັງໝົດ:</span><strong class="overdue-text">${formatCurrency(totalOverdue)}</strong></div>
-                                <div><span>ຈ່າຍລ່ວງໜ້າ:</span><strong>${formatCurrency(advancePayments.amount)}</strong></div>
-                                <div><span>ເດືອນທີ່ຄ້າງຈ່າຍ (${overdue.length} ເດືອນ):</span><strong class="overdue-text">${overdueText}</strong></div>
-                            </div>
-                            <div class="signature-section">
-                                <p style="margin-top: 2rem;">........................................</p>
-                                <p>(ລາຍເຊັນຜູ້ພິມລາຍງານ)</p>
-                            </div>
-                        </div>
-                    </body>
-                </html>
-            `);
-            reportWindow.document.close();
-            reportWindow.focus();
-        }
-
-        function printSummaryReport(data) {
-            state.reportDataForExport = data; // Save data for export
-            const { tenants, grandTotals } = data;
-            
-            let tenantRows = '';
-            tenants.forEach((tenantData, index) => {
-                const { tenantInfo, paymentDetails } = tenantData;
-                const { totalPaid, totalOverdue, overdue, advancePayments, paidCount } = paymentDetails;
-                
-                tenantRows += `
-                    <tr>
-                        <td class="center">${index + 1}</td>
-                        <td class="center">${tenantInfo.room}</td>
-                        <td>${tenantInfo.name}</td>
-                        <td class="right amount-paid">${formatCurrency(totalPaid)}</td>
-                        <td class="center">${paidCount}</td>
-                        <td class="right amount-overdue">${formatCurrency(totalOverdue)}</td>
-                        <td class="center">${overdue.length > 0 ? overdue.length : '-'}</td>
-                        <td class="right amount-advance">${formatCurrency(advancePayments.amount)}</td>
-                    </tr>
-                `;
-            });
-
-            const reportWindow = window.open('', '_blank', 'height=800,width=1200');
-            reportWindow.document.write(`
-                <html>
-                    <head>
-                        <title>ລາຍງານສະຫຼຸບລວມການຊຳລະຄ່າຫໍພັກ</title>
-                        <link rel="preconnect" href="https://fonts.googleapis.com">
-                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                        <link href="https://fonts.googleapis.com/css2?family=Phetsarath+OT:wght@400;700&display=swap" rel="stylesheet">
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-                        <style>
-                            body { font-family: 'Phetsarath OT', sans-serif; margin: 1rem; color: #333; background-color: #f9fafb; font-size: 12px; }
-                            .container { max-width: 1000px; margin: auto; background-color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                            .actions { position: fixed; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
-                            .actions button { background-color: #16a34a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; font-family: 'Phetsarath OT', sans-serif; font-size: 12px; }
-                            .actions button.excel-btn { background-color: #059669; }
-                            .report-header { text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #16a34a; padding-bottom: 0.8rem; }
-                            .report-header img { height: 50px; margin-bottom: 0.4rem; }
-                            .report-header h1 { color: #15803d; font-size: 1.5rem; margin: 0; }
-                            .report-header p { margin: 0.2rem 0; font-size: 0.9rem; color: #555; }
-                            table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-                            th, td { border: 1px solid #d1d5db; padding: 0.4rem 0.6rem; text-align: left; vertical-align: middle; }
-                            th { background-color: #f3f4f6; color: #1f2937; font-weight: bold; text-transform: uppercase; text-align: center; }
-                            tr:nth-child(even) { background-color: #f9fafb; }
-                            td.center { text-align: center; }
-                            td.right { text-align: right; }
-                            .amount-paid { color: #166534; font-weight: 500; }
-                            .amount-overdue { color: #b91c1c; font-weight: bold; }
-                            .amount-advance { color: #0f766e; font-weight: 500; }
-                            tfoot { font-weight: bold; background-color: #e5e7eb; }
-                            tfoot td { color: #111827; font-size: 1em; }
-                            .signature-section { margin-top: 3rem; text-align: right; }
-                            @media print { 
-                                @page { size: A4 landscape; margin: 0.5in; } 
-                                body { margin: 0; background-color: #fff; font-size: 11px; } 
-                                .container { box-shadow: none; border: none; }
-                                .no-print { display: none; } 
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="actions no-print">
-                                <button onclick="window.print()"><i class="fas fa-print"></i> ພິມ</button>
-                                <button class="excel-btn" onclick="window.opener.exportSummaryReportAsCsv()"><i class="fas fa-file-excel"></i> ສົ່ງອອກ Excel</button>
-                             </div>
-                            <div class="report-header">
-                                 <!-- <img src="https://i.ibb.co/F4VGPVB1/image.png" alt="Logo">-->
-                                <h1>ໃບລາຍງານສະຫຼຸບລວມ</h1>
-                                <p>ການຊຳລະຄ່າຫໍພັກພະນັກງານ (${grandTotals.tenantCount} ຫ້ອງ)</p>
-                                <p>ວັນທີພິມ: ${new Date().toLocaleDateString('lo-LA', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
-                            </div>
-                            <table id="summary-report-table">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2">ລ/ດ</th>
-                                        <th rowspan="2">ເບີຫ້ອງ</th>
-                                        <th rowspan="2">ຊື່ ແລະ ນາມສະກຸນ</th>
-                                        <th colspan="2">ຈ່າຍແລ້ວ</th>
-                                        <th colspan="2">ຄ້າງຈ່າຍ</th>
-                                        <th rowspan="2">ຈ່າຍລ່ວງໜ້າ</th>
-                                    </tr>
-                                    <tr>
-                                       <th class="right">ຈຳນວນເງິນ</th>
-                                       <th class="center">ຈຳນວນເດືອນ</th>
-                                       <th class="right">ຈຳນວນເງິນ</th>
-                                       <th class="center">ຈຳນວນເດືອນ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${tenantRows}</tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3" class="right">ລວມທັງໝົດ:</td>
-                                        <td class="right amount-paid">${formatCurrency(grandTotals.totalPaid)}</td>
-                                        <td class="center"></td>
-                                        <td class="right amount-overdue">${formatCurrency(grandTotals.totalOverdue)}</td>
-                                        <td class="center">${grandTotals.overdueMonthsCount}</td>
-                                        <td class="right amount-advance">${formatCurrency(grandTotals.totalAdvance)}</td>
-                                    </tr>
-                                <tfoot>
-                            </table>
-                            <div class="signature-section">
-                                <p style="margin-top: 2rem;">........................................</p>
-                                <p>(ລາຍເຊັນຜູ້ພິມລາຍງານ)</p>
-                            </div>
-                        </div>
-                    </body>
-                </html>
-            `);
-            reportWindow.document.close();
-            reportWindow.focus();
-        }
-
-        function downloadCSV(csvContent, fileName) {
-            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", fileName);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        }
-
-        function escapeCsvCell(cell) {
-            if (cell === null || cell === undefined) return '';
-            const cellStr = String(cell);
-            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-                return `"${cellStr.replace(/"/g, '""')}"`;
-            }
-            return cellStr;
-        }
-
-        function exportIndividualReportAsCsv() {
-            if (!state.reportDataForExport) return;
-            const { tenantInfo, paymentDetails } = state.reportDataForExport;
-            
-            let csvRows = [];
-            const today = new Date().toLocaleDateString('lo-LA', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-            // --- Header ---
-            csvRows.push(['ໃບລາຍງານການຊຳລະຄ່າຫໍພັກ']);
-            csvRows.push(['ວັນທີພິມ:', today]);
-            csvRows.push([]); // Empty row
-
-            // --- Tenant Info ---
-            csvRows.push(['ຂໍ້ມູນຜູ້ເຊົ່າ']);
-            csvRows.push(['ຊື່ ແລະ ນາມສະກຸນ:', tenantInfo.name]);
-            csvRows.push(['ເບີຫ້ອງ:', tenantInfo.room]);
-            csvRows.push(['ພະແນກ:', tenantInfo.department]);
-            csvRows.push(['ເບີໂທ:', tenantInfo.phone]);
-            csvRows.push(['ວັນທີເຂົ້າ:', tenantInfo.startDate]);
-            csvRows.push(['ຄ່າເຊົ່າ/ເດືອນ:', formatCurrencyForExport(tenantInfo.monthlyRent)]);
-            csvRows.push([]); // Empty row
-
-            // --- Payment History ---
-            csvRows.push(['ປະຫວັດການຊຳລະ']);
-            csvRows.push(['ລ/ດ', 'ລາຍການ', 'ເດືອນ/ປີ', 'ຈຳນວນເງິນ (ກີບ)']);
-            let paymentCounter = 1;
-            const sortedYears = Object.keys(paymentDetails.paidByYear).sort((a, b) => a - b);
-            sortedYears.forEach(year => {
-                const monthsInYear = paymentDetails.paidByYear[year].map(m => m.month).sort((a,b) => parseInt(a) - parseInt(b));
-                const amountInYear = monthsInYear.length * tenantInfo.monthlyRent;
-                csvRows.push([
-                    paymentCounter++,
-                    `ການຊຳລະຄ່າຫໍພັກ ປີ ${year}`,
-                    `${monthsInYear.join(', ')}/${year}`,
-                    formatCurrencyForExport(amountInYear)
-                ]);
-            });
-             if (sortedYears.length === 0) {
-                csvRows.push(['-', 'ບໍ່ມີປະຫວັດການຊຳລະ', '-', '-']);
-            }
-            csvRows.push([]); // Empty row
-
-            // --- Summary ---
-            csvRows.push(['ສະຫຼຸບລວມ']);
-            csvRows.push(['ຈ່າຍແລ້ວທັງໝົດ:', formatCurrencyForExport(paymentDetails.totalPaid)]);
-            csvRows.push(['ຄ້າງຈ່າຍທັງໝົດ:', formatCurrencyForExport(paymentDetails.totalOverdue)]);
-            csvRows.push(['ຈ່າຍລ່ວງໜ້າ:', formatCurrencyForExport(paymentDetails.advancePayments.amount)]);
-            csvRows.push([`ເດືອນທີ່ຄ້າງຈ່າຍ (${paymentDetails.overdue.length} ເດືອນ):`, paymentDetails.overdue.length > 0 ? paymentDetails.overdue.join(', ') : 'ບໍ່ມີ']);
-
-            const csvContent = csvRows.map(row => row.map(escapeCsvCell).join(',')).join('\n');
-            downloadCSV(csvContent, `ລາຍງານ-${tenantInfo.name}.csv`);
-        }
-
-        function exportSummaryReportAsCsv() {
-            if (!state.reportDataForExport) return;
-            const { tenants, grandTotals } = state.reportDataForExport;
-            
-            let csvRows = [];
-            const today = new Date().toLocaleDateString('lo-LA', { day: '2.digit', month: '2.digit', year: 'numeric' });
-            
-            // --- Header ---
-            csvRows.push(['ໃບລາຍງານສະຫຼຸບລວມ']);
-            csvRows.push([`ການຊຳລະຄ່າຫໍພັກພະນັກງານ (${grandTotals.tenantCount} ຫ້ອງ)`]);
-            csvRows.push(['ວັນທີພິມ:', today]);
-            csvRows.push([]);
-
-            // --- Table Headers ---
-            csvRows.push(['ລ/ດ', 'ເບີຫ້ອງ', 'ຊື່ ແລະ ນາມສະກຸນ', 'ຈ່າຍແລ້ວ', '', 'ຄ້າງຈ່າຍ', '', 'ຈ່າຍລ່ວງໜ້າ']);
-            csvRows.push(['', '', '', 'ຈຳນວນເງິນ', 'ຈຳນວນເດືອນ', 'ຈຳນວນເງິນ', 'ຈຳນວນເດືອນ', '']);
-
-            // --- Table Body ---
-            tenants.forEach((tenantData, index) => {
-                const { tenantInfo, paymentDetails } = tenantData;
-                csvRows.push([
-                    index + 1,
-                    tenantInfo.room,
-                    tenantInfo.name,
-                    formatCurrencyForExport(paymentDetails.totalPaid),
-                    paymentDetails.paidCount,
-                    formatCurrencyForExport(paymentDetails.totalOverdue),
-                    paymentDetails.overdue.length > 0 ? paymentDetails.overdue.length : '0',
-                    formatCurrencyForExport(paymentDetails.advancePayments.amount)
-                ]);
-            });
-
-            // --- Table Footer ---
-            csvRows.push([]);
-            csvRows.push([
-                '', '', 'ລວມທັງໝົດ:',
-                formatCurrencyForExport(grandTotals.totalPaid),
-                '',
-                formatCurrencyForExport(grandTotals.totalOverdue),
-                grandTotals.overdueMonthsCount,
-                formatCurrencyForExport(grandTotals.totalAdvance)
-            ]);
-            
-            const csvContent = csvRows.map(row => row.map(escapeCsvCell).join(',')).join('\n');
-            downloadCSV(csvContent, 'ລາຍງານລວມ.csv');
-        }
-
-        // --- APP INITIALIZATION ---
-        function initializeApp() {
-            renderAuthSection();
-            if (state.currentUser) {
-                switchView('dashboard-view');
-                if (state.currentUser.role === 'Admin') {
-                    initializeAdminDashboard(); // This is already async
-                } else {
-                    el('admin-controls').classList.add('hidden');
-                    loadDashboard(state.currentUser.room); // This is already async
-                }
-            } else {
-                switchView('public-search-view');
-                el('public-report-content').classList.add('hidden');
-                el('public-initial-message').classList.remove('hidden'); // Show the welcome message
-                el('admin-controls').classList.add('hidden');
-                el('admin-actions-container').innerHTML = '';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeApp();
-            el('public-search-btn').addEventListener('click', performPublicSearch);
-            el('public-room-input').addEventListener('keyup', e => {
-                if (e.key === 'Enter') {
-                    performPublicSearch();
-                }
-            });
-
-            el('payment-receipt').addEventListener('change', e => {
-                const fileInput = e.target;
-                const fileNameDisplay = el('file-name-display');
-                if (fileInput.files.length > 0) {
-                    fileNameDisplay.textContent = `ໄຟລ໌ທີ່ເລືອກ: ${fileInput.files[0].name}`;
-                } else {
-                    fileNameDisplay.textContent = '';
-                }
-            });
-
-            // Add listener for the new edit form
-            el('edit-payment-form').addEventListener('submit', handleEditSubmit);
-
-            // === NEW: ເພີ່ມໂຕຈັບອີເວັ້ນໃຫ້ກ່ອງແກ້ໄຂເດືອນ ===
-            el('edit-payment-months').addEventListener('input', () => {
-                handleMonthInput(el('edit-payment-months'), el('edit-payment-amount'), el('edit-payment-error'));
-            });
-        });
-    </script>
+    <h1>ລະບົບຕິດຕາມການຊຳລະເງີນຫໍພັກ</h1>
+   <p>ພະແນກແຜນການແລະການລົງທືນແຂວງ</p>
+    <button class="btn-primary" id="openApp">ໄປທີ່ຫນ້າຫຼັກລະບົບ...</button>
+    <button class="btn-install" id="installApp">ຕິດຕັ້ງແອັບ(PWA)</button>
+  </div>
+  <footer>© <span id="year"></span> ພັດທະນາໂດຍ: MR.bounPherng</footer>
+
+  <script>
+    const APP_URL = 'https://script.google.com/macros/s/AKfycbwSUnF8DjqKm1jfLVCvKQ7ZCiB5RwnJ5EVi8-xHTbOZD1UU_hz-rUaIfrlHZuDWCWz8/exec';
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    document.getElementById('openApp').addEventListener('click', () => {
+      window.open(APP_URL, '_blank');
+    });
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('installApp');
+    installBtn.style.display = 'none';
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const result = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      } else {
+        alert("ເປີດໃຊ້ Chrome → 'Add to Home screen'");
+      }
+    });
+
+    //if ('serviceWorker' in navigator) {
+    //  navigator.serviceWorker.register('service-worker.js');
+   // }
+   
+  // <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registered: ', registration);
+          })
+          .catch(error => {
+            console.log('Service Worker registration failed: ', error);
+          });
+      });
+    }
+
+ 
+
+  </script>
+  
 </body>
 </html>

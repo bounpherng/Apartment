@@ -1,20 +1,23 @@
 {
-  "name": "My Apps Script PWA",
-  "short_name": "MyGASApp",
-  "start_url": "./index.html",
+  "name": "ລະບົບຕິດຕາມການຊໍາລະເງິນຫໍພັກ",
+  "short_name": "ຊຳລະເງີນຫໍພັກ",
+  "description": "ລະບົບຕິດຕາມການຊໍາລະເງິນ ແລະ ຂໍ້ມູນຜູ້ເຊົ່າຫໍພັກອອນໄລນ໌",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2196f3",
+  "background_color": "#1a2525",
+  "theme_color": "#2ecc71",
+  "lang": "lo",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "/"
 }
